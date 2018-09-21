@@ -27,7 +27,16 @@ class RobotController():
             egm_robot = egm_pb2.EgmRobot()
             data, addr = self.sock.recvfrom(1024)
             egm_robot.ParseFromString(data)
-            return egm_robot.feedBack
+            fb = egm_robot.feedBack
+            # print("Measured pose:")
+            # print(fb.cartesian.pos.x)
+            # print(fb.cartesian.pos.y)
+            # print(fb.cartesian.pos.z)
+            # print(fb.cartesian.orient.u0)
+            # print(fb.cartesian.orient.u1)
+            # print(fb.cartesian.orient.u2)
+            # print(fb.cartesian.orient.u3)
+            return fb
         except Exception as e:
             return None
 
@@ -66,6 +75,15 @@ class RobotController():
         self.pos[0] = pos.x
         self.pos[1] = pos.y
         self.pos[2] = pos.z
+
+        # print("Command pose:")
+        # print(pos.x)
+        # print(pos.y)
+        # print(pos.z)
+        # print(orient.u0)
+        # print(orient.u1)
+        # print(orient.u2)
+        # print(orient.u3)
 
         sent = self.sock.sendto(msg.SerializeToString(), self.addr)
 

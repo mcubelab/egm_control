@@ -35,9 +35,9 @@ class ROSHelper():
         pose.header = Header()
         pose.header.stamp = rospy.Time.now()
         pose.header.frame_id = "map"
-        pose.pose.position.x = pos.x
-        pose.pose.position.y = pos.y
-        pose.pose.position.z = pos.z
+        pose.pose.position.x = pos.x/1000
+        pose.pose.position.y = pos.y/1000
+        pose.pose.position.z = pos.z/1000
         pose.pose.orientation.x = quaternion.u1
         pose.pose.orientation.y = quaternion.u2
         pose.pose.orientation.z = quaternion.u3

@@ -11,7 +11,7 @@ import ROSHelper, RobotController
 import cProfile
 
 # Initial position of the end-effector (check RAPID code)
-initial_pos = [-0.045, 0.009, 0.1782]
+initial_pos = [0.3, 0.0, 0.1782]
 # Coordinate limits (1: lower bound, 2: upper bound)
 x_limits = [0.1, 0.6]
 y_limits = [-0.4, 0.4]
