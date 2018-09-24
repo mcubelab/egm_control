@@ -6,7 +6,7 @@ Common steps (alternatively, run script `run_example` in `pman`):
 1. Load an instance of `roscore`.
 2. Open the position/velocity controller (e.g. `example.py`) which will publish the desired position or velocity to the ROS topic `/commanded_pose`:
 
-		rosrun EGMControl example.py
+		rosrun egm_control example.py
 
 For each testing session:
 
@@ -14,7 +14,7 @@ For each testing session:
 2. In FlexPendant, select _PP To Main_ and then press _Yes_.
 3. Start the main program (`EGMControl.py`), either via `pman` or by typing:
 
-		rosrun EGMControl EGMControl.py
+		rosrun egm_control EGMControl.py
 4. Press the Play button in the FlexPendant to start the RAPID code.
 
 In order to cancel the execution of `EGMControl.py`, either:
