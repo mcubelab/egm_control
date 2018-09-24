@@ -1,0 +1,24 @@
+cmd "0-roscore" {
+    exec = "roscore";
+    host = "localhost";
+}
+cmd "1-controller" {
+    exec = "rosrun egm_control example.py";
+    host = "localhost";
+}
+
+cmd "2-egm_control" {
+    exec = "rosrun egm_control EGMControl.py";
+    host = "localhost";
+}
+
+cmd "3-rviz" {
+    exec = "rosrun rviz rviz";
+    host = "localhost";
+}
+
+script "run_example" {
+    start cmd "0-roscore";
+    wait ms 1000;
+    start cmd "1-controller";
+}

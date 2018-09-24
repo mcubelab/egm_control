@@ -7,17 +7,21 @@ import helpers.egm_helper as egm_helper
 
 class RobotController():
 
-    def __init__(self, pos, x_limits, y_limits, z_limits):
+    def __init__(self, x_limits, y_limits, z_limits):
         self.UDP_PORT = 6510
         self.sequenceNumber = 0
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind(("", self.UDP_PORT))
+        # Waits until robot reaches initial position
         data, self.addr = self.sock.recvfrom(1024)
+        rospy.sleep(1)
+        # Gets actual initial position
+        self.fb = self.get_robot_feedback()
         self.starttick = egm_helper.get_tick()
-        self.pos = pos
         self.x_limits = x_limits
         self.y_limits = y_limits
         self.z_limits = z_limits
+        self.lastvel = 0
 
     def __del__(self):
         self.sock.close()
@@ -27,16 +31,8 @@ class RobotController():
             egm_robot = egm_pb2.EgmRobot()
             data, addr = self.sock.recvfrom(1024)
             egm_robot.ParseFromString(data)
-            fb = egm_robot.feedBack
-            # print("Measured pose:")
-            # print(fb.cartesian.pos.x)
-            # print(fb.cartesian.pos.y)
-            # print(fb.cartesian.pos.z)
-            # print(fb.cartesian.orient.u0)
-            # print(fb.cartesian.orient.u1)
-            # print(fb.cartesian.orient.u2)
-            # print(fb.cartesian.orient.u3)
-            return fb
+            self.fb = egm_robot.feedBack
+            return self.fb
         except Exception as e:
             return None
 
@@ -71,27 +67,46 @@ class RobotController():
         msg.header.CopyFrom(header)
         msg.planned.CopyFrom(planned)
 
-        # Updating self.pos
-        self.pos[0] = pos.x
-        self.pos[1] = pos.y
-        self.pos[2] = pos.z
-
-        # print("Command pose:")
-        # print(pos.x)
-        # print(pos.y)
-        # print(pos.z)
-        # print(orient.u0)
-        # print(orient.u1)
-        # print(orient.u2)
-        # print(orient.u3)
-
         sent = self.sock.sendto(msg.SerializeToString(), self.addr)
 
-    def set_robot_velocity(self, vel, hz):
+    def set_robot_velocity(self, vel):
         # Position is changed according to vel
-        # Orientation is given by original orientation
+        # Orientation is also integrated
         pose = vel
-        pose.pose.position.x = self.pos[0] + vel.pose.position.x/hz
-        pose.pose.position.y = self.pos[1] + vel.pose.position.y/hz
-        pose.pose.position.z = self.pos[2] + vel.pose.position.z/hz
+        # First execution will be ignored, in order to measure time differences
+        if self.lastvel == 0:
+            dt = 0
+        else:
+            dt = (rospy.Time.now().to_nsec()-self.lastvel)/1000000000.0
+        self.lastvel = rospy.Time.now().to_nsec()
+        # vel.pose.orientation should have zero w component, as it represents
+        # an angular velocity
+        pose.pose.position.x = self.fb.cartesian.pos.x + vel.pose.position.x * dt
+        pose.pose.position.y = self.fb.cartesian.pos.y + vel.pose.position.y * dt
+        pose.pose.position.z = self.fb.cartesian.pos.z + vel.pose.position.z * dt
+        pose.pose.orientation.x = self.fb.cartesian.orient.x + 0.5*dt*(self.fb.cartesian.orient.w*vel.pose.orientation.x - self.fb.cartesian.orient.y*vel.pose.orientation.z + self.fb.cartesian.orient.z*vel.pose.orientation.y)
+        pose.pose.orientation.y = self.fb.cartesian.orient.y + 0.5*dt*(self.fb.cartesian.orient.w*vel.pose.orientation.y + self.fb.cartesian.orient.x*vel.pose.orientation.z - self.fb.cartesian.orient.z*vel.pose.orientation.x)
+        pose.pose.orientation.z = self.fb.cartesian.orient.z + 0.5*dt*(self.fb.cartesian.orient.w*vel.pose.orientation.z + self.fb.cartesian.orient.x*vel.pose.orientation.y + self.fb.cartesian.orient.y*vel.pose.orientation.x)
+        pose.pose.orientation.w = self.fb.cartesian.orient.w - 0.5*dt*(self.fb.cartesian.orient.x*vel.pose.orientation.x + self.fb.cartesian.orient.y*vel.pose.orientation.y + self.fb.cartesian.orient.z*vel.pose.orientation.z)
         self.set_robot_pose(pose)
+
+    # Debugging functions - to be removed for production
+    def debug_robot_feedback(self, fb):
+        print("Measured pose:")
+        print(fb.cartesian.pos.x)
+        print(fb.cartesian.pos.y)
+        print(fb.cartesian.pos.z)
+        print(fb.cartesian.orient.u0)
+        print(fb.cartesian.orient.u1)
+        print(fb.cartesian.orient.u2)
+        print(fb.cartesian.orient.u3)
+
+    def debug_robot_pose(self, pos, orient):
+        print("Command pose:")
+        print(pos.x)
+        print(pos.y)
+        print(pos.z)
+        print(orient.u0)
+        print(orient.u1)
+        print(orient.u2)
+        print(orient.u3)
