@@ -6,7 +6,7 @@ from sensor_msgs.msg import JointState
 from geometry_msgs.msg import PoseStamped
 from std_msgs.msg import Header
 
-pos = [0.3, 0.0, 0.1782]
+# All sizes in mm!
 hz = 250.0
 
 if __name__ == '__main__':
@@ -25,7 +25,7 @@ if __name__ == '__main__':
         pose.header.stamp = rospy.Time.now()
         pose.header.frame_id = "map"
         # Position in meters
-        pose.pose.position.x = 0.01
+        pose.pose.position.x = 10.0
         pose.pose.position.y = 0.0
         pose.pose.position.z = 0.0
         # Orientation in xyzw
