@@ -7,7 +7,6 @@ from geometry_msgs.msg import PoseStamped
 from std_msgs.msg import Header
 
 pos = [0.3, 0.0, 0.1782]
-v = 0.01 # m/s
 hz = 250.0
 
 if __name__ == '__main__':
@@ -31,7 +30,7 @@ if __name__ == '__main__':
         pose.pose.position.z = 0.0
         # Orientation in xyzw
         pose.pose.orientation.x = 0.0
-        pose.pose.orientation.y = 0.0
+        pose.pose.orientation.y = 1.0
         pose.pose.orientation.z = 0.0
         pose.pose.orientation.w = 0.0
         command_pose_pub.publish(pose)

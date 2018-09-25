@@ -11,7 +11,7 @@ import ROSHelper, RobotController
 import cProfile
 
 # Initial position of the end-effector (check RAPID code)
-# initial_pos = [0.3, 0.0, 0.1782]
+initial_pos = [0.3, 0.0, 0.1782]
 # Coordinate limits (1: lower bound, 2: upper bound)
 x_limits = [0.1, 0.6]
 y_limits = [-0.4, 0.4]
@@ -24,7 +24,7 @@ def main():
 
     # Initializing helper instances
     ros_helper = ROSHelper.ROSHelper()
-    robot_controller = RobotController.RobotController(x_limits, y_limits, z_limits)
+    robot_controller = RobotController.RobotController(initial_pos, x_limits, y_limits, z_limits)
 
     rospy.set_param('egm_status', True)
     rospy.loginfo('[EGMControl] Ready')
@@ -55,4 +55,4 @@ def main():
 
 
 if __name__=='__main__':
-    cProfile.run('main()')
+    main()

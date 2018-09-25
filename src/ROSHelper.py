@@ -12,7 +12,7 @@ class ROSHelper():
         self.command_pose_sub = rospy.Subscriber("/command_pose", PoseStamped, self.load_command_pose)
         self.joint_state_pub = rospy.Publisher("/joint_state", JointState, queue_size = 2)
         self.measured_pose_pub = rospy.Publisher("/measured_pose", PoseStamped, queue_size = 2)
-        self.command_pose = None
+        self.command_pose = PoseStamped()
 
     def load_command_pose(self, data):
         self.command_pose = data
@@ -35,9 +35,9 @@ class ROSHelper():
         pose.header = Header()
         pose.header.stamp = rospy.Time.now()
         pose.header.frame_id = "map"
-        pose.pose.position.x = pos.x/1000
-        pose.pose.position.y = pos.y/1000
-        pose.pose.position.z = pos.z/1000
+        pose.pose.position.x = pos.x/1000.0
+        pose.pose.position.y = pos.y/1000.0
+        pose.pose.position.z = pos.z/1000.0
         pose.pose.orientation.x = quaternion.u1
         pose.pose.orientation.y = quaternion.u2
         pose.pose.orientation.z = quaternion.u3
