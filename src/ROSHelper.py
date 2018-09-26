@@ -18,7 +18,10 @@ class ROSHelper():
         self.command_pose = data
 
     def get_command_pose(self):
-        return self.command_pose
+        # Avoiding multiple executions of the same command
+        data = self.command_pose
+        self.command_pose = PoseStamped()
+        return data
 
     def publish_joint_state(self, joints):
         js = JointState()

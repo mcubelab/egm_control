@@ -14,14 +14,13 @@ class RobotController():
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind(("", self.UDP_PORT))
         data, self.addr = self.sock.recvfrom(1024)
-        rospy.loginfo('[EGMControl] Successfully connected to robot. IP: %s', self.addr[0])
         self.lastfb = self.get_feedback_from_data(data)
-        rospy.loginfo('[EGMControl] Initial position (x, y, z) = (%.2f, %.2f, %.2f) mm', self.lastfb.cartesian.pos.x, self.lastfb.cartesian.pos.y, self.lastfb.cartesian.pos.z)
-        rospy.loginfo('[EGMControl] Initial position (w, x, y, z) = (%d, %d, %d, %d)', self.lastfb.cartesian.orient.u0, self.lastfb.cartesian.orient.u1, self.lastfb.cartesian.orient.u2, self.lastfb.cartesian.orient.u3)
+        self.debug_connection(self.addr[0], self.lastfb)
         self.starttick = egm_helper.get_tick()
         self.x_limits = x_limits
         self.y_limits = y_limits
         self.z_limits = z_limits
+        self.last_set = 0
 
     def __del__(self):
         self.sock.close()
@@ -41,7 +40,17 @@ class RobotController():
         except Exception as e:
             return None
 
-    def set_robot_pose(self, pose):
+    def set_robot_pose(self, pose, update_last_set = True):
+        # NOTE: Default behavior is staying at the same position
+        if pose == PoseStamped():
+            pose.pose.position.x = self.lastfb.cartesian.pos.x
+            pose.pose.position.y = self.lastfb.cartesian.pos.y
+            pose.pose.position.z = self.lastfb.cartesian.pos.z
+            pose.pose.orientation.x = self.lastfb.cartesian.orient.u1
+            pose.pose.orientation.y = self.lastfb.cartesian.orient.u2
+            pose.pose.orientation.z = self.lastfb.cartesian.orient.u3
+            pose.pose.orientation.w = self.lastfb.cartesian.orient.u0
+
         # Preparing message header
         header = egm_pb2.EgmHeader()
         header.mtype = egm_pb2.EgmHeader.MSGTYPE_CORRECTION
@@ -74,22 +83,40 @@ class RobotController():
 
         self.debug_command_pose(pos, orient)
 
+        # Last set command is saved here only for position mode
+        if update_last_set:
+            self.last_set = rospy.Time.now().to_nsec()
+
         sent = self.sock.sendto(msg.SerializeToString(), self.addr)
 
     def set_robot_velocity(self, vel, hz):
+        # Time difference computation
+        if self.last_set == 0:
+            dt = 1/hz
+        else:
+            dt = (rospy.Time.now().to_nsec()-self.last_set)/1.0e9
+        # Last set command is saved here for higher precision
+        self.last_set = rospy.Time.now().to_nsec()
+
         # Position is changed according to vel
         # Orientation is given by original orientation
+        # NOTE: Default behavior is staying at the same position
         pose = PoseStamped()
-        pose.pose.position.x = self.lastfb.cartesian.pos.x + vel.pose.position.x/hz
-        pose.pose.position.y = self.lastfb.cartesian.pos.y + vel.pose.position.y/hz
-        pose.pose.position.z = self.lastfb.cartesian.pos.z + vel.pose.position.z/hz
-        pose.pose.orientation.w = self.lastfb.cartesian.orient.u0
-        pose.pose.orientation.x = self.lastfb.cartesian.orient.u1
-        pose.pose.orientation.y = self.lastfb.cartesian.orient.u2
-        pose.pose.orientation.z = self.lastfb.cartesian.orient.u3
-        self.set_robot_pose(pose)
+        pose.pose.position.x = self.lastfb.cartesian.pos.x + vel.pose.position.x * dt
+        pose.pose.position.y = self.lastfb.cartesian.pos.y + vel.pose.position.y * dt
+        pose.pose.position.z = self.lastfb.cartesian.pos.z + vel.pose.position.z * dt
+        pose.pose.orientation.x = self.lastfb.cartesian.orient.u1 + 0.5*dt*(self.lastfb.cartesian.orient.u0*vel.pose.orientation.x - self.lastfb.cartesian.orient.u2*vel.pose.orientation.z + self.lastfb.cartesian.orient.u3*vel.pose.orientation.y)
+        pose.pose.orientation.y = self.lastfb.cartesian.orient.u2 + 0.5*dt*(self.lastfb.cartesian.orient.u0*vel.pose.orientation.y + self.lastfb.cartesian.orient.u1*vel.pose.orientation.z - self.lastfb.cartesian.orient.u3*vel.pose.orientation.x)
+        pose.pose.orientation.z = self.lastfb.cartesian.orient.u3 + 0.5*dt*(self.lastfb.cartesian.orient.u0*vel.pose.orientation.z + self.lastfb.cartesian.orient.u1*vel.pose.orientation.y + self.lastfb.cartesian.orient.u2*vel.pose.orientation.x)
+        pose.pose.orientation.w = self.lastfb.cartesian.orient.u0 - 0.5*dt*(self.lastfb.cartesian.orient.u1*vel.pose.orientation.x + self.lastfb.cartesian.orient.u2*vel.pose.orientation.y + self.lastfb.cartesian.orient.u3*vel.pose.orientation.z)
+        self.set_robot_pose(pose, False)
 
     # Debug functions
+    def debug_connection(self, addr, fb):
+        rospy.loginfo('[EGMControl] Successfully connected to robot. IP: %s', addr)
+        rospy.loginfo('[EGMControl] Initial position (x, y, z) = (%.2f, %.2f, %.2f) mm', fb.cartesian.pos.x, fb.cartesian.pos.y, fb.cartesian.pos.z)
+        rospy.loginfo('[EGMControl] Initial position (w, x, y, z) = (%d, %d, %d, %d)', fb.cartesian.orient.u0, fb.cartesian.orient.u1, fb.cartesian.orient.u2, fb.cartesian.orient.u3)
+
     def debug_measured_pose(self, fb):
         rospy.loginfo('[EGMControl] Measured pos (x, y, z) = (%.2f, %.2f, %.2f) mm', fb.cartesian.pos.x, fb.cartesian.pos.y, fb.cartesian.pos.z)
         rospy.loginfo('[EGMControl] Measured orient (w, x, y, z) = (%.2f, %.2f, %.2f, %.2f)', fb.cartesian.orient.u0, fb.cartesian.orient.u1, fb.cartesian.orient.u2, fb.cartesian.orient.u3)
