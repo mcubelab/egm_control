@@ -19,18 +19,18 @@ if __name__ == '__main__':
     rospy.set_param('egm_status_example', True)
     rospy.set_param('egm_mode', 1)
 
-    while rospy.get_param('egm_status_example') == True:
+    while (not rospy.is_shutdown()) and (rospy.get_param('egm_status_example') == True):
         pose = PoseStamped()
         pose.header = Header()
         pose.header.stamp = rospy.Time.now()
         pose.header.frame_id = "map"
-        # Position in meters
+        # Position in mm or velocity in mm/s
         pose.pose.position.x = 10.0
         pose.pose.position.y = 0.0
         pose.pose.position.z = 0.0
-        # Orientation in xyzw
+        # Orientation or angular velocity in xyzw
         pose.pose.orientation.x = 0.0
-        pose.pose.orientation.y = 1.0
+        pose.pose.orientation.y = 0.0
         pose.pose.orientation.z = 0.0
         pose.pose.orientation.w = 0.0
         command_pose_pub.publish(pose)

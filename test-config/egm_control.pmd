@@ -2,23 +2,32 @@ cmd "0-roscore" {
     exec = "roscore";
     host = "localhost";
 }
-cmd "1-controller" {
+cmd "1-egm_control" {
+    exec = "rosrun egm_control EGMControl.py";
+    host = "localhost";
+}
+cmd "2-datasaver" {
+    exec = "rosrun egm_control datasaver.py";
+    host = "localhost";
+}
+cmd "3-example_controller" {
     exec = "rosrun egm_control example.py";
     host = "localhost";
 }
 
-cmd "2-egm_control" {
-    exec = "rosrun egm_control EGMControl.py";
-    host = "localhost";
-}
-
-cmd "3-rviz" {
-    exec = "rosrun rviz rviz";
-    host = "localhost";
-}
-
-script "run_example" {
+script "base" {
     start cmd "0-roscore";
     wait ms 1000;
-    start cmd "1-controller";
+    start cmd "1-egm_control";
+    wait ms 1000;
+}
+
+script "test" {
+  start cmd "2-datasaver";
+  wait ms 100;
+  start cmd "3-example_controller";
+  wait ms 5000;
+  stop cmd "3-example_controller";
+  wait ms 500;
+  stop cmd "2-datasaver";
 }

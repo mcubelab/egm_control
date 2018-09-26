@@ -11,6 +11,7 @@ class ROSHelper():
     def __init__(self):
         self.command_pose_sub = rospy.Subscriber("/command_pose", PoseStamped, self.load_command_pose)
         self.joint_state_pub = rospy.Publisher("/joint_state", JointState, queue_size = 2)
+        self.sent_pose_pub = rospy.Publisher("/sent_pose", PoseStamped, queue_size = 2)
         self.measured_pose_pub = rospy.Publisher("/measured_pose", PoseStamped, queue_size = 2)
         self.command_pose = PoseStamped()
 
@@ -46,3 +47,6 @@ class ROSHelper():
         pose.pose.orientation.z = quaternion.u3
         pose.pose.orientation.w = quaternion.u0
         self.measured_pose_pub.publish(pose)
+
+    def publish_sent_pose(self, pose):
+        self.sent_pose_pub.publish(pose)

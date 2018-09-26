@@ -15,6 +15,7 @@ class RobotController():
         self.sock.bind(("", self.UDP_PORT))
         data, self.addr = self.sock.recvfrom(1024)
         self.lastfb = self.get_feedback_from_data(data)
+        self.virtualfb = self.lastfb
         self.debug_connection(self.addr[0], self.lastfb)
         self.starttick = egm_helper.get_tick()
         self.x_limits = x_limits
@@ -35,7 +36,6 @@ class RobotController():
             data, addr = self.sock.recvfrom(1024)
             fb = self.get_feedback_from_data(data)
             self.lastfb = fb
-            self.debug_measured_pose(fb)
             return fb
         except Exception as e:
             return None
@@ -72,22 +72,22 @@ class RobotController():
         orient.u3 = pose.pose.orientation.z
 
         # Constructing EgmSensor message to send
-        pose = egm_pb2.EgmPose()
-        pose.orient.CopyFrom(orient)
-        pose.pos.CopyFrom(pos)
+        egm_pose = egm_pb2.EgmPose()
+        egm_pose.orient.CopyFrom(orient)
+        egm_pose.pos.CopyFrom(pos)
         planned = egm_pb2.EgmPlanned()
-        planned.cartesian.CopyFrom(pose)
+        planned.cartesian.CopyFrom(egm_pose)
         msg = egm_pb2.EgmSensor()
         msg.header.CopyFrom(header)
         msg.planned.CopyFrom(planned)
-
-        self.debug_command_pose(pos, orient)
 
         # Last set command is saved here only for position mode
         if update_last_set:
             self.last_set = rospy.Time.now().to_nsec()
 
         sent = self.sock.sendto(msg.SerializeToString(), self.addr)
+        pose.header.stamp = rospy.Time.now()
+        return pose
 
     def set_robot_velocity(self, vel, hz):
         # Time difference computation
@@ -101,15 +101,32 @@ class RobotController():
         # Position is changed according to vel
         # Orientation is given by original orientation
         # NOTE: Default behavior is staying at the same position
-        pose = PoseStamped()
-        pose.pose.position.x = self.lastfb.cartesian.pos.x + vel.pose.position.x * dt
-        pose.pose.position.y = self.lastfb.cartesian.pos.y + vel.pose.position.y * dt
-        pose.pose.position.z = self.lastfb.cartesian.pos.z + vel.pose.position.z * dt
-        pose.pose.orientation.x = self.lastfb.cartesian.orient.u1 + 0.5*dt*(self.lastfb.cartesian.orient.u0*vel.pose.orientation.x - self.lastfb.cartesian.orient.u2*vel.pose.orientation.z + self.lastfb.cartesian.orient.u3*vel.pose.orientation.y)
-        pose.pose.orientation.y = self.lastfb.cartesian.orient.u2 + 0.5*dt*(self.lastfb.cartesian.orient.u0*vel.pose.orientation.y + self.lastfb.cartesian.orient.u1*vel.pose.orientation.z - self.lastfb.cartesian.orient.u3*vel.pose.orientation.x)
-        pose.pose.orientation.z = self.lastfb.cartesian.orient.u3 + 0.5*dt*(self.lastfb.cartesian.orient.u0*vel.pose.orientation.z + self.lastfb.cartesian.orient.u1*vel.pose.orientation.y + self.lastfb.cartesian.orient.u2*vel.pose.orientation.x)
-        pose.pose.orientation.w = self.lastfb.cartesian.orient.u0 - 0.5*dt*(self.lastfb.cartesian.orient.u1*vel.pose.orientation.x + self.lastfb.cartesian.orient.u2*vel.pose.orientation.y + self.lastfb.cartesian.orient.u3*vel.pose.orientation.z)
-        self.set_robot_pose(pose, False)
+        if rospy.get_param('egm_vel_mode', 'virtual') == 'real':
+            pose = PoseStamped()
+            pose.pose.position.x = self.lastfb.cartesian.pos.x + vel.pose.position.x * dt
+            pose.pose.position.y = self.lastfb.cartesian.pos.y + vel.pose.position.y * dt
+            pose.pose.position.z = self.lastfb.cartesian.pos.z + vel.pose.position.z * dt
+            pose.pose.orientation.x = self.lastfb.cartesian.orient.u1 + 0.5*dt*(self.lastfb.cartesian.orient.u0*vel.pose.orientation.x - self.lastfb.cartesian.orient.u2*vel.pose.orientation.z + self.lastfb.cartesian.orient.u3*vel.pose.orientation.y)
+            pose.pose.orientation.y = self.lastfb.cartesian.orient.u2 + 0.5*dt*(self.lastfb.cartesian.orient.u0*vel.pose.orientation.y + self.lastfb.cartesian.orient.u1*vel.pose.orientation.z - self.lastfb.cartesian.orient.u3*vel.pose.orientation.x)
+            pose.pose.orientation.z = self.lastfb.cartesian.orient.u3 + 0.5*dt*(self.lastfb.cartesian.orient.u0*vel.pose.orientation.z + self.lastfb.cartesian.orient.u1*vel.pose.orientation.y + self.lastfb.cartesian.orient.u2*vel.pose.orientation.x)
+            pose.pose.orientation.w = self.lastfb.cartesian.orient.u0 - 0.5*dt*(self.lastfb.cartesian.orient.u1*vel.pose.orientation.x + self.lastfb.cartesian.orient.u2*vel.pose.orientation.y + self.lastfb.cartesian.orient.u3*vel.pose.orientation.z)
+        else:
+            pose = PoseStamped()
+            pose.pose.position.x = self.virtualfb.cartesian.pos.x + vel.pose.position.x * dt
+            pose.pose.position.y = self.virtualfb.cartesian.pos.y + vel.pose.position.y * dt
+            pose.pose.position.z = self.virtualfb.cartesian.pos.z + vel.pose.position.z * dt
+            pose.pose.orientation.x = self.virtualfb.cartesian.orient.u1 + 0.5*dt*(self.virtualfb.cartesian.orient.u0*vel.pose.orientation.x - self.virtualfb.cartesian.orient.u2*vel.pose.orientation.z + self.virtualfb.cartesian.orient.u3*vel.pose.orientation.y)
+            pose.pose.orientation.y = self.virtualfb.cartesian.orient.u2 + 0.5*dt*(self.virtualfb.cartesian.orient.u0*vel.pose.orientation.y + self.virtualfb.cartesian.orient.u1*vel.pose.orientation.z - self.virtualfb.cartesian.orient.u3*vel.pose.orientation.x)
+            pose.pose.orientation.z = self.virtualfb.cartesian.orient.u3 + 0.5*dt*(self.virtualfb.cartesian.orient.u0*vel.pose.orientation.z + self.virtualfb.cartesian.orient.u1*vel.pose.orientation.y + self.virtualfb.cartesian.orient.u2*vel.pose.orientation.x)
+            pose.pose.orientation.w = self.virtualfb.cartesian.orient.u0 - 0.5*dt*(self.virtualfb.cartesian.orient.u1*vel.pose.orientation.x + self.virtualfb.cartesian.orient.u2*vel.pose.orientation.y + self.lastfb.cartesian.orient.u3*vel.pose.orientation.z)
+            self.virtualfb.cartesian.pos.x = pose.pose.position.x
+            self.virtualfb.cartesian.pos.y = pose.pose.position.y
+            self.virtualfb.cartesian.pos.z = pose.pose.position.z
+            self.virtualfb.cartesian.orient.u1 = pose.pose.orientation.x
+            self.virtualfb.cartesian.orient.u2 = pose.pose.orientation.y
+            self.virtualfb.cartesian.orient.u3 = pose.pose.orientation.z
+            self.virtualfb.cartesian.orient.u0 = pose.pose.orientation.w
+        return self.set_robot_pose(pose, False)
 
     # Debug functions
     def debug_connection(self, addr, fb):

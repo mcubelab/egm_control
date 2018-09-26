@@ -37,10 +37,11 @@ def main():
     while (not rospy.is_shutdown()) and (rospy.get_param('egm_status') == True):
         command_pose = ros_helper.get_command_pose()
         if mode == 1:
-            robot_controller.set_robot_velocity(command_pose, hz)
+            sent_pose = robot_controller.set_robot_velocity(command_pose, hz)
         else:
-            robot_controller.set_robot_pose(command_pose)
+            sent_pose = robot_controller.set_robot_pose(command_pose)
 
+        ros_helper.publish_sent_pose(sent_pose)
         feedback = robot_controller.get_robot_feedback()
         joints = feedback.joints.joints
         pos = feedback.cartesian.pos
