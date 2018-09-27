@@ -17,7 +17,7 @@ if __name__ == '__main__':
     rospy.sleep(1)
 
     rospy.set_param('egm_status_example', True)
-    rospy.set_param('egm_mode', 1)
+    rospy.set_param('egm_mode', 'velocity')
 
     while (not rospy.is_shutdown()) and (rospy.get_param('egm_status_example') == True):
         pose = PoseStamped()

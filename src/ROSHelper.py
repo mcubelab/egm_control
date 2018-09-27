@@ -19,33 +19,12 @@ class ROSHelper():
         self.command_pose = data
 
     def get_command_pose(self):
-        # Avoiding multiple executions of the same command
-        data = self.command_pose
-        self.command_pose = PoseStamped()
-        return data
+        return self.command_pose
 
     def publish_joint_state(self, joints):
-        js = JointState()
-        js.header = Header()
-        js.header.stamp = rospy.Time.now()
-        js.name = ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6']
-        js.position = [j for j in joints]
-        js.velocity = [0.0 for i in xrange(6)]
-        js.effort = [0.0 for i in xrange(6)]
-        self.joint_state_pub.publish(js)
+        self.joint_state_pub.publish(joints)
 
-    def publish_measured_pose(self, pos, quaternion):
-        pose = PoseStamped()
-        pose.header = Header()
-        pose.header.stamp = rospy.Time.now()
-        pose.header.frame_id = "map"
-        pose.pose.position.x = pos.x
-        pose.pose.position.y = pos.y
-        pose.pose.position.z = pos.z
-        pose.pose.orientation.x = quaternion.u1
-        pose.pose.orientation.y = quaternion.u2
-        pose.pose.orientation.z = quaternion.u3
-        pose.pose.orientation.w = quaternion.u0
+    def publish_measured_pose(self, pose):
         self.measured_pose_pub.publish(pose)
 
     def publish_sent_pose(self, pose):

@@ -26,8 +26,8 @@ script "test" {
   start cmd "2-datasaver";
   wait ms 100;
   start cmd "3-example_controller";
-  wait ms 5000;
+  wait ms 11500;
   stop cmd "3-example_controller";
-  wait ms 500;
+  wait ms 2000;
   stop cmd "2-datasaver";
 }

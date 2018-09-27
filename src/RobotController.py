@@ -3,25 +3,29 @@ import time
 import rospy
 import socket
 import helpers.egm_pb2 as egm_pb2
-import helpers.egm_helper as egm_helper
-from geometry_msgs.msg import PoseStamped
+import helpers.EGMHelper as EGMHelper
+from geometry_msgs.msg import PoseStamped, Pose
+from std_msgs.msg import Header
 
 class RobotController():
 
     def __init__(self, x_limits, y_limits, z_limits):
+        # Initialize connection
         self.UDP_PORT = 6510
-        self.sequenceNumber = 0
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind(("", self.UDP_PORT))
         data, self.addr = self.sock.recvfrom(1024)
-        self.lastfb = self.get_feedback_from_data(data)
-        self.virtualfb = self.lastfb
-        self.debug_connection(self.addr[0], self.lastfb)
-        self.starttick = egm_helper.get_tick()
+
+        # Initialize variables
+        self.last_measured_pose = EGMHelper.EgmFeedback_to_PoseStamped(self.get_feedback_from_data(data))
+        self.last_command_time = rospy.Time()   # Stamp of last command_pose received
+        self.last_sent_pose = self.last_measured_pose
+
+        self.sequenceNumber = 0
+        self.start_tick = EGMHelper.get_tick()
         self.x_limits = x_limits
         self.y_limits = y_limits
         self.z_limits = z_limits
-        self.last_set = 0
 
     def __del__(self):
         self.sock.close()
@@ -32,101 +36,42 @@ class RobotController():
         return egm_robot.feedBack
 
     def get_robot_feedback(self):
-        try:
-            data, addr = self.sock.recvfrom(1024)
-            fb = self.get_feedback_from_data(data)
-            self.lastfb = fb
-            return fb
-        except Exception as e:
-            return None
+        data, addr = self.sock.recvfrom(1024)
+        feedback = self.get_feedback_from_data(data)
+        self.last_measured_pose = EGMHelper.EgmFeedback_to_PoseStamped(feedback)
+        joint_state = EGMHelper.EgmFeedback_to_JointState(feedback)
+        return self.last_measured_pose, joint_state
 
-    def set_robot_pose(self, pose, update_last_set = True):
-        # NOTE: Default behavior is staying at the same position
-        if pose == PoseStamped():
-            pose.pose.position.x = self.lastfb.cartesian.pos.x
-            pose.pose.position.y = self.lastfb.cartesian.pos.y
-            pose.pose.position.z = self.lastfb.cartesian.pos.z
-            pose.pose.orientation.x = self.lastfb.cartesian.orient.u1
-            pose.pose.orientation.y = self.lastfb.cartesian.orient.u2
-            pose.pose.orientation.z = self.lastfb.cartesian.orient.u3
-            pose.pose.orientation.w = self.lastfb.cartesian.orient.u0
+    def send_command(self, command_pose, command_mode, hz):
+        # Check if last received command has already been executed
+        # In this case, default behavior - stay at same position
+        if command_pose.header.stamp == self.last_command_time:
+            target = self.last_measured_pose.pose
+        else:
+            if command_mode == 'velocity':
+                if self.last_command_time == rospy.Time():
+                    dt = 1/hz
+                else:
+                    dt = 1/hz
+                    # TODO: improve this
+                if rospy.get_param('egm_vel_mode', 'virtual') == 'real':
+                    target = EGMHelper.translate_pose_by_velocity(self.last_measured_pose.pose, command_pose.pose, dt)
+                else:
+                    target = EGMHelper.translate_pose_by_velocity(self.last_sent_pose.pose, command_pose.pose, dt)
+            else:
+                target = command_pose.pose
 
-        # Preparing message header
-        header = egm_pb2.EgmHeader()
-        header.mtype = egm_pb2.EgmHeader.MSGTYPE_CORRECTION
-        header.seqno = self.sequenceNumber
-        header.tm = egm_helper.get_tick()-self.starttick
+        # Apply limits to the target position
+        target.position.x = max(min(target.position.x, self.x_limits[1]), self.x_limits[0])
+        target.position.y = max(min(target.position.y, self.y_limits[1]), self.y_limits[0])
+        target.position.z = max(min(target.position.z, self.z_limits[1]), self.z_limits[0])
+
+        msg = EGMHelper.Pose_to_EgmSensor(target, self.sequenceNumber, EGMHelper.get_tick()-self.start_tick)
         self.sequenceNumber += 1
-
-        # Positions are bounded and converted from m to mm
-        pos = egm_pb2.EgmCartesian()
-        pos.x = max(min(pose.pose.position.x, self.x_limits[1]), self.x_limits[0])
-        pos.y = max(min(pose.pose.position.y, self.y_limits[1]), self.y_limits[0])
-        pos.z = max(min(pose.pose.position.z, self.z_limits[1]), self.z_limits[0])
-
-        # Importing orientation from pose
-        orient = egm_pb2.EgmQuaternion()
-        orient.u0 = pose.pose.orientation.w
-        orient.u1 = pose.pose.orientation.x
-        orient.u2 = pose.pose.orientation.y
-        orient.u3 = pose.pose.orientation.z
-
-        # Constructing EgmSensor message to send
-        egm_pose = egm_pb2.EgmPose()
-        egm_pose.orient.CopyFrom(orient)
-        egm_pose.pos.CopyFrom(pos)
-        planned = egm_pb2.EgmPlanned()
-        planned.cartesian.CopyFrom(egm_pose)
-        msg = egm_pb2.EgmSensor()
-        msg.header.CopyFrom(header)
-        msg.planned.CopyFrom(planned)
-
-        # Last set command is saved here only for position mode
-        if update_last_set:
-            self.last_set = rospy.Time.now().to_nsec()
-
+        self.last_sent_pose = PoseStamped(header=Header(stamp=rospy.Time.now(), frame_id='map'), pose=target)
+        self.last_command_time = command_pose.header.stamp
         sent = self.sock.sendto(msg.SerializeToString(), self.addr)
-        pose.header.stamp = rospy.Time.now()
-        return pose
-
-    def set_robot_velocity(self, vel, hz):
-        # Time difference computation
-        if self.last_set == 0:
-            dt = 1/hz
-        else:
-            dt = (rospy.Time.now().to_nsec()-self.last_set)/1.0e9
-        # Last set command is saved here for higher precision
-        self.last_set = rospy.Time.now().to_nsec()
-
-        # Position is changed according to vel
-        # Orientation is given by original orientation
-        # NOTE: Default behavior is staying at the same position
-        if rospy.get_param('egm_vel_mode', 'virtual') == 'real':
-            pose = PoseStamped()
-            pose.pose.position.x = self.lastfb.cartesian.pos.x + vel.pose.position.x * dt
-            pose.pose.position.y = self.lastfb.cartesian.pos.y + vel.pose.position.y * dt
-            pose.pose.position.z = self.lastfb.cartesian.pos.z + vel.pose.position.z * dt
-            pose.pose.orientation.x = self.lastfb.cartesian.orient.u1 + 0.5*dt*(self.lastfb.cartesian.orient.u0*vel.pose.orientation.x - self.lastfb.cartesian.orient.u2*vel.pose.orientation.z + self.lastfb.cartesian.orient.u3*vel.pose.orientation.y)
-            pose.pose.orientation.y = self.lastfb.cartesian.orient.u2 + 0.5*dt*(self.lastfb.cartesian.orient.u0*vel.pose.orientation.y + self.lastfb.cartesian.orient.u1*vel.pose.orientation.z - self.lastfb.cartesian.orient.u3*vel.pose.orientation.x)
-            pose.pose.orientation.z = self.lastfb.cartesian.orient.u3 + 0.5*dt*(self.lastfb.cartesian.orient.u0*vel.pose.orientation.z + self.lastfb.cartesian.orient.u1*vel.pose.orientation.y + self.lastfb.cartesian.orient.u2*vel.pose.orientation.x)
-            pose.pose.orientation.w = self.lastfb.cartesian.orient.u0 - 0.5*dt*(self.lastfb.cartesian.orient.u1*vel.pose.orientation.x + self.lastfb.cartesian.orient.u2*vel.pose.orientation.y + self.lastfb.cartesian.orient.u3*vel.pose.orientation.z)
-        else:
-            pose = PoseStamped()
-            pose.pose.position.x = self.virtualfb.cartesian.pos.x + vel.pose.position.x * dt
-            pose.pose.position.y = self.virtualfb.cartesian.pos.y + vel.pose.position.y * dt
-            pose.pose.position.z = self.virtualfb.cartesian.pos.z + vel.pose.position.z * dt
-            pose.pose.orientation.x = self.virtualfb.cartesian.orient.u1 + 0.5*dt*(self.virtualfb.cartesian.orient.u0*vel.pose.orientation.x - self.virtualfb.cartesian.orient.u2*vel.pose.orientation.z + self.virtualfb.cartesian.orient.u3*vel.pose.orientation.y)
-            pose.pose.orientation.y = self.virtualfb.cartesian.orient.u2 + 0.5*dt*(self.virtualfb.cartesian.orient.u0*vel.pose.orientation.y + self.virtualfb.cartesian.orient.u1*vel.pose.orientation.z - self.virtualfb.cartesian.orient.u3*vel.pose.orientation.x)
-            pose.pose.orientation.z = self.virtualfb.cartesian.orient.u3 + 0.5*dt*(self.virtualfb.cartesian.orient.u0*vel.pose.orientation.z + self.virtualfb.cartesian.orient.u1*vel.pose.orientation.y + self.virtualfb.cartesian.orient.u2*vel.pose.orientation.x)
-            pose.pose.orientation.w = self.virtualfb.cartesian.orient.u0 - 0.5*dt*(self.virtualfb.cartesian.orient.u1*vel.pose.orientation.x + self.virtualfb.cartesian.orient.u2*vel.pose.orientation.y + self.lastfb.cartesian.orient.u3*vel.pose.orientation.z)
-            self.virtualfb.cartesian.pos.x = pose.pose.position.x
-            self.virtualfb.cartesian.pos.y = pose.pose.position.y
-            self.virtualfb.cartesian.pos.z = pose.pose.position.z
-            self.virtualfb.cartesian.orient.u1 = pose.pose.orientation.x
-            self.virtualfb.cartesian.orient.u2 = pose.pose.orientation.y
-            self.virtualfb.cartesian.orient.u3 = pose.pose.orientation.z
-            self.virtualfb.cartesian.orient.u0 = pose.pose.orientation.w
-        return self.set_robot_pose(pose, False)
+        return self.last_sent_pose
 
     # Debug functions
     def debug_connection(self, addr, fb):
