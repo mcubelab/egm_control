@@ -34,7 +34,7 @@ def main():
         # Getting command from ROS and sending it to the robot
         command_pose = ros_helper.get_command_pose()
         command_mode = rospy.get_param('egm_mode', 'position')
-        sent_pose = robot_controller.send_command(command_pose, command_mode, hz)
+        sent_pose = robot_controller.send_command(command_pose, 'velocity', hz)
         ros_helper.publish_sent_pose(sent_pose)
 
         # Getting feedback from the robot and sending it back to ROS
@@ -45,6 +45,7 @@ def main():
         rate.sleep()
 
     # Deleting instances to free resources
+    print('Maximum queue size: ' + str(ros_helper.get_max_queued()))
     del ros_helper
     del robot_controller
     rospy.loginfo('[EGMControl] End of program')

@@ -17,9 +17,9 @@ class RobotController():
         data, self.addr = self.sock.recvfrom(1024)
 
         # Initialize variables
-        self.last_measured_pose = EGMHelper.EgmFeedback_to_PoseStamped(self.get_feedback_from_data(data))
+        self.last_measured_ps = EGMHelper.EgmFeedback_to_PoseStamped(self.get_feedback_from_data(data))
         self.last_command_time = rospy.Time()   # Stamp of last command_pose received
-        self.last_sent_pose = self.last_measured_pose
+        self.last_sent_ps = self.last_measured_ps
 
         self.sequenceNumber = 0
         self.start_tick = EGMHelper.get_tick()
@@ -38,26 +38,30 @@ class RobotController():
     def get_robot_feedback(self):
         data, addr = self.sock.recvfrom(1024)
         feedback = self.get_feedback_from_data(data)
-        self.last_measured_pose = EGMHelper.EgmFeedback_to_PoseStamped(feedback)
+        self.last_measured_ps = EGMHelper.EgmFeedback_to_PoseStamped(feedback)
         joint_state = EGMHelper.EgmFeedback_to_JointState(feedback)
-        return self.last_measured_pose, joint_state
+        return self.last_measured_ps, joint_state
 
     def send_command(self, command_pose, command_mode, hz):
         # Check if last received command has already been executed
         # In this case, default behavior - stay at same position
-        if command_pose.header.stamp == self.last_command_time:
-            target = self.last_measured_pose.pose
+        new_sent_time = rospy.Time.now()
+        if command_pose == None:
+            if command_mode == 'velocity':
+                target = self.last_sent_ps.pose
+            else:
+                target = self.last_measured_ps.pose
         else:
             if command_mode == 'velocity':
-                if self.last_command_time == rospy.Time():
+                if self.sequenceNumber == 0:
                     dt = 1/hz
                 else:
-                    dt = 1/hz
-                    # TODO: improve this
+                    dt = new_sent_time.to_sec()-self.last_sent_ps.header.stamp.to_sec()
+
                 if rospy.get_param('egm_vel_mode', 'virtual') == 'real':
                     target = EGMHelper.translate_pose_by_velocity(self.last_measured_pose.pose, command_pose.pose, dt)
                 else:
-                    target = EGMHelper.translate_pose_by_velocity(self.last_sent_pose.pose, command_pose.pose, dt)
+                    target = EGMHelper.translate_pose_by_velocity(self.last_sent_ps.pose, command_pose.pose, dt)
             else:
                 target = command_pose.pose
 
@@ -68,10 +72,9 @@ class RobotController():
 
         msg = EGMHelper.Pose_to_EgmSensor(target, self.sequenceNumber, EGMHelper.get_tick()-self.start_tick)
         self.sequenceNumber += 1
-        self.last_sent_pose = PoseStamped(header=Header(stamp=rospy.Time.now(), frame_id='map'), pose=target)
-        self.last_command_time = command_pose.header.stamp
+        self.last_sent_ps = PoseStamped(header=Header(stamp=new_sent_time, frame_id='map'), pose=target)
         sent = self.sock.sendto(msg.SerializeToString(), self.addr)
-        return self.last_sent_pose
+        return self.last_sent_ps
 
     # Debug functions
     def debug_connection(self, addr, fb):

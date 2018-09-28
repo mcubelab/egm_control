@@ -7,25 +7,25 @@ from geometry_msgs.msg import PoseStamped
 from std_msgs.msg import Header
 
 # All sizes in mm!
-hz = 250.0
+hz = 250.0 # hz
+t = 10.0 # s
 
 if __name__ == '__main__':
     rospy.init_node('example', anonymous=True)
-    command_pose_pub = rospy.Publisher('/command_pose', PoseStamped, queue_size = 10, latch=True)
+    command_pose_pub = rospy.Publisher('/command_pose', PoseStamped, queue_size = 100, latch=True)
 
-    rate = rospy.Rate(hz)
-    rospy.sleep(1)
-
-    rospy.set_param('egm_status_example', True)
     rospy.set_param('egm_mode', 'velocity')
 
-    while (not rospy.is_shutdown()) and (rospy.get_param('egm_status_example') == True):
+    rate = rospy.Rate(hz)
+    start_time = rospy.Time.now().to_sec()
+
+    while (not rospy.is_shutdown()) and rospy.Time.now().to_sec()-start_time < t:
         pose = PoseStamped()
         pose.header = Header()
         pose.header.stamp = rospy.Time.now()
         pose.header.frame_id = "map"
         # Position in mm or velocity in mm/s
-        pose.pose.position.x = 10.0
+        pose.pose.position.x = 20.0
         pose.pose.position.y = 0.0
         pose.pose.position.z = 0.0
         # Orientation or angular velocity in xyzw
