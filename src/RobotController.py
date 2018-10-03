@@ -18,7 +18,6 @@ class RobotController():
 
         # Initialize variables
         self.last_measured_ps = EGMHelper.EgmFeedback_to_PoseStamped(self.get_feedback_from_data(data))
-        self.last_command_time = rospy.Time()   # Stamp of last command_pose received
         self.last_sent_ps = self.last_measured_ps
 
         self.sequenceNumber = 0

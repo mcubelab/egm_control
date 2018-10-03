@@ -1,9 +1,4 @@
 #include "ROSHelper.hpp"
-#include "ros/ros.h"
-#include "std_msgs/String.h"
-#include "std_msgs/Header.h"
-#include "sensor_msgs/JointState.h"
-#include "geometry_msgs/PoseStamped.h"
 
 ROSHelper::ROSHelper(ros::NodeHandle n)
 {
