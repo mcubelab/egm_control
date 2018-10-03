@@ -24,7 +24,7 @@ public:
   geometry_msgs::PoseStamped send_command(geometry_msgs::PoseStamped command_pose, std::string& command_mode, double hz);
 
 private:
-  uint32_t seqno;
+  unsigned int seqno;
   uint32_t start_tick;
   UDPSocket* sock;
   int udpPort;

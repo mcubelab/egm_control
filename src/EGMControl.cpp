@@ -27,8 +27,8 @@ int main(int argc, char **argv)
   {
     command_pose = ros_helper.get_command_pose();
     ros::param::param<std::string>("egm_mode", command_mode, "position");
-    // sent_pose = robot_controller.send_command(command_pose, command_mode, hz);
-    ros_helper.publish_sent_pose(command_pose);
+    sent_pose = robot_controller.send_command(command_pose, command_mode, hz);
+    ros_helper.publish_sent_pose(sent_pose);
 
     abb::egm::EgmFeedBack fb = robot_controller.get_robot_feedback();
     ros_helper.publish_measured_pose(EgmFeedBack_to_PoseStamped(&fb));

@@ -65,7 +65,7 @@ sensor_msgs::JointState EgmFeedBack_to_JointState(abb::egm::EgmFeedBack *fb)
   return js;
 }
 
-abb::egm::EgmSensor* Pose_to_EgmSensor(geometry_msgs::Pose pose, uint32_t seqno, uint32_t tick)
+abb::egm::EgmSensor* Pose_to_EgmSensor(geometry_msgs::Pose pose, unsigned int seqno, uint32_t tick)
 {
   abb::egm::EgmHeader* header = new abb::egm::EgmHeader();
   header->set_mtype(abb::egm::EgmHeader_MessageType_MSGTYPE_CORRECTION);
@@ -91,6 +91,7 @@ abb::egm::EgmSensor* Pose_to_EgmSensor(geometry_msgs::Pose pose, uint32_t seqno,
   planned->set_allocated_cartesian(pp);
 
   abb::egm::EgmSensor* msg = new abb::egm::EgmSensor();
+  msg->set_allocated_header(header);
   msg->set_allocated_planned(planned);
   return msg;
 }
