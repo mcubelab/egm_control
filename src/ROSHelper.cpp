@@ -25,9 +25,9 @@ void ROSHelper::load_command_pose(const geometry_msgs::PoseStamped& data)
 geometry_msgs::PoseStamped ROSHelper::get_command_pose()
 {
   if(command_poses.size() > 0) {
-    geometry_msgs::PoseStamped data = command_poses[0];
+    last_command_ps = command_poses[0];
     command_poses.erase(command_poses.begin());
-    return data;
+    return last_command_ps;
   } else {
     return geometry_msgs::PoseStamped();
   }

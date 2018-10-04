@@ -23,12 +23,12 @@ def import_test(csvname):
 	x2 = []
 	csv_to_arrays(home + '/egm_control/data/measured_pose_' + csvname + '.txt', t1, x1)
 	csv_to_arrays(home + '/egm_control/data/sent_pose_' + csvname + '.txt', t2, x2)
-	index_tref = np.min(np.where(np.array(t1) > 0.49))
+	index_tref = np.min(np.where(np.array(t1) > 0.5))
 	t1 = t1[index_tref:]
-	t1[:] = [t-0.49 for t in t1]
+	t1[:] = [t-0.5 for t in t1]
 	x1 = x1[index_tref:]
 	t2 = t2[index_tref:]
-	t2[:] = [t-0.49 for t in t2]
+	t2[:] = [t-0.5 for t in t2]
 	x2 = x2[index_tref:]
 	return t1, t2, x1, x2
 

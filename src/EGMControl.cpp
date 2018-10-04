@@ -37,7 +37,6 @@ int main(int argc, char **argv)
     ros::spinOnce();
     rate.sleep();
   }
-  ROS_INFO("[EGMControl] Maximum queue size: %d", ros_helper.get_max_queued());
   delete &ros_helper;
   delete &robot_controller;
   ROS_INFO("[EGMControl] End of program");
