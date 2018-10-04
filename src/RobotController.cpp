@@ -30,7 +30,7 @@ abb::egm::EgmFeedBack RobotController::get_robot_feedback()
   return msg->feedback();
 }
 
-geometry_msgs::PoseStamped RobotController::send_command(geometry_msgs::PoseStamped command_pose, std::string& command_mode, double hz)
+geometry_msgs::PoseStamped RobotController::send_command(geometry_msgs::PoseStamped command_pose, std::string command_mode, double hz)
 {
   ros::Time new_sent_time = ros::Time::now();
   geometry_msgs::Pose target;
