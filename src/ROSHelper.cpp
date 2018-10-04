@@ -7,7 +7,7 @@ ROSHelper::ROSHelper(ros::NodeHandle n)
   measured_pose_pub = n.advertise<geometry_msgs::PoseStamped>("measured_pose", 100);
   sent_pose_pub = n.advertise<geometry_msgs::PoseStamped>("sent_pose", 100);
   command_poses = std::vector<geometry_msgs::PoseStamped>();
-  int max_queued;
+  max_queued = 0;
 }
 
 ROSHelper::~ROSHelper()
