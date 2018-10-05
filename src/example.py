@@ -8,7 +8,7 @@ from std_msgs.msg import Header
 
 # All sizes in mm!
 hz = 250.0 # hz
-t = 10.0 # s
+t = float(sys.argv[2]) # s
 
 if __name__ == '__main__':
     rospy.init_node('example', anonymous=True)
@@ -25,7 +25,7 @@ if __name__ == '__main__':
         pose.header.stamp = rospy.Time.now()
         pose.header.frame_id = "map"
         # Position in mm or velocity in mm/s
-        pose.pose.position.x = 5.0
+        pose.pose.position.x = float(sys.argv[1])
         pose.pose.position.y = 0.0
         pose.pose.position.z = 0.0
         # Orientation or angular velocity in xyzw

@@ -14,15 +14,84 @@ cmd "2-datasaver" {
     exec = "rosrun egm_control datasaver.py";
     host = "localhost";
 }
-cmd "3-example_controller" {
+cmd "3-example_controller_5_10" {
+    exec = "rosrun egm_control example.py";
+    host = "localhost";
+}
+cmd "3-example_controller_-20_10" {
     exec = "rosrun egm_control example.py";
     host = "localhost";
 }
 
-script "test" {
+script "1-single-test" {
     start cmd "2-datasaver";
     wait ms 500;
-    start cmd "3-example_controller" wait "stopped";
+    start cmd "3-example_controller_5_10" wait "stopped";
+    wait ms 2000;
+    stop cmd "2-datasaver";
+}
+script "2-long-test-x12" {
+    start cmd "2-datasaver";
+    wait ms 500;
+    start cmd "3-example_controller_5_10" wait "stopped";
+    wait ms 2000;
+    stop cmd "2-datasaver";
+    start cmd "2-datasaver";
+    wait ms 500;
+    start cmd "3-example_controller_5_10" wait "stopped";
+    wait ms 2000;
+    stop cmd "2-datasaver";
+    start cmd "2-datasaver";
+    wait ms 500;
+    start cmd "3-example_controller_5_10" wait "stopped";
+    wait ms 2000;
+    stop cmd "2-datasaver";
+    start cmd "2-datasaver";
+    wait ms 500;
+    start cmd "3-example_controller_5_10" wait "stopped";
+    wait ms 2000;
+    stop cmd "2-datasaver";
+
+    start cmd "3-example_controller_-20_10" wait "stopped";
+
+    start cmd "2-datasaver";
+    wait ms 500;
+    start cmd "3-example_controller_5_10" wait "stopped";
+    wait ms 2000;
+    stop cmd "2-datasaver";
+    start cmd "2-datasaver";
+    wait ms 500;
+    start cmd "3-example_controller_5_10" wait "stopped";
+    wait ms 2000;
+    stop cmd "2-datasaver";
+    start cmd "2-datasaver";
+    wait ms 500;
+    start cmd "3-example_controller_5_10" wait "stopped";
+    wait ms 2000;
+    stop cmd "2-datasaver";
+    start cmd "2-datasaver";
+    wait ms 500;
+    start cmd "3-example_controller_5_10" wait "stopped";
+    wait ms 2000;
+    stop cmd "2-datasaver";
+    start cmd "2-datasaver";
+    wait ms 500;
+    start cmd "3-example_controller_5_10" wait "stopped";
+    wait ms 2000;
+    stop cmd "2-datasaver";
+    start cmd "2-datasaver";
+    wait ms 500;
+    start cmd "3-example_controller_5_10" wait "stopped";
+    wait ms 2000;
+    stop cmd "2-datasaver";
+    start cmd "2-datasaver";
+    wait ms 500;
+    start cmd "3-example_controller_5_10" wait "stopped";
+    wait ms 2000;
+    stop cmd "2-datasaver";
+    start cmd "2-datasaver";
+    wait ms 500;
+    start cmd "3-example_controller_5_10" wait "stopped";
     wait ms 2000;
     stop cmd "2-datasaver";
 }
