@@ -47,13 +47,13 @@ def get_stats(t1, t2, x1, x2, speed):
 	d2 = []
 	for i in range(int(0.2*len(t1)), int(0.8*len(t1))):
 		xref = x1[i]
-		d2.append(t1[i]-t2[np.min(np.where(np.array(x2) >= xref))])
+		d2.append(t1[i]-t2[np.min(np.where(np.array(x2) >= xref-0.02))])
 	d2 = np.average(d2)
 
 	# Stabilization delay at end
 	xref = x2[-1]
-	d3 = t1[np.min(np.where(abs(np.array(x1)-xref) < 0.01))]-t2[np.min(np.where(np.array(x2) == xref))]
+	d3 = t1[np.min(np.where(abs(np.array(x1)-xref) < 0.1))]-t2[np.min(np.where(np.array(x2) == xref))]
 
 	xref = x2[-1]
-	d4 = t1[np.min(np.where(abs(np.array(x1)-xref) < 0.01))]-xref/speed
+	d4 = t1[np.min(np.where(abs(np.array(x1)-xref) < 0.1))]-xref/speed
 	return d1, d2, d3, d4
