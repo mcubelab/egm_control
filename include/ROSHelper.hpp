@@ -33,6 +33,7 @@ private:
   ros::Publisher measured_pose_pub;
   ros::Publisher sent_pose_pub;
   std::vector<geometry_msgs::PoseStamped> command_poses;
+  geometry_msgs::PoseStamped last_command_ps;
   int max_queued;
 };
 

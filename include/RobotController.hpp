@@ -21,7 +21,7 @@ public:
   ~RobotController();
 
   abb::egm::EgmFeedBack get_robot_feedback();
-  geometry_msgs::PoseStamped send_command(geometry_msgs::PoseStamped command_pose, std::string& command_mode, double hz);
+  geometry_msgs::PoseStamped send_command(geometry_msgs::PoseStamped command_pose, std::string command_mode, double hz);
 
 private:
   unsigned int seqno;
