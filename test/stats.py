@@ -38,22 +38,22 @@ def get_last_file(dir):
 def get_stats(t1, t2, x1, x2, speed):
 	# Mid-measurement delay between theoretical and sent
 	d1 = []
-	for i in range(int(0.2*len(t2)), int(0.8*len(t2))):
+	for i in range(int(0.3*len(t2)), int(0.7*len(t2))):
 		xref = x2[i]
 		d1.append(t2[i]-xref/speed)
 	d1 = np.average(d1)
 
 	# Mid-measurement delay between sent and measured
 	d2 = []
-	for i in range(int(0.2*len(t1)), int(0.8*len(t1))):
+	for i in range(int(0.3*len(t1)), int(0.7*len(t1))):
 		xref = x1[i]
-		d2.append(t1[i]-t2[np.min(np.where(np.array(x2) >= xref-0.02))])
+		d2.append(t1[i]-t2[np.min(np.where(np.array(x2) >= xref))])
 	d2 = np.average(d2)
 
 	# Stabilization delay at end
 	xref = x2[-1]
-	d3 = t1[np.min(np.where(abs(np.array(x1)-xref) < 0.1))]-t2[np.min(np.where(np.array(x2) == xref))]
+	d3 = t1[np.min(np.where(abs(np.array(x1)-xref) < 0.05))]-t2[np.min(np.where(np.array(x2) == xref))]
 
 	xref = x2[-1]
-	d4 = t1[np.min(np.where(abs(np.array(x1)-xref) < 0.1))]-xref/speed
+	d4 = t1[np.min(np.where(abs(np.array(x1)-xref) < 0.05))]-xref/speed
 	return d1, d2, d3, d4

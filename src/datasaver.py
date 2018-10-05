@@ -9,8 +9,8 @@ from std_msgs.msg import Header
 
 
 def callback(pose, f):
-    f.write("%d,%.4f,%.4f,%.4f\n" % (rospy.Time.now().to_sec()*1e9, pose.pose.position.x, pose.pose.position.y, pose.pose.position.z))
-    # f.write("%d,%.4f,%.4f,%.4f\n" % (pose.header.stamp.secs*1e9+pose.header.stamp.nsecs, pose.pose.position.x, pose.pose.position.y, pose.pose.position.z))
+    # f.write("%d,%.4f,%.4f,%.4f\n" % (rospy.Time.now().to_sec()*1e9, pose.pose.position.x, pose.pose.position.y, pose.pose.position.z))
+    f.write("%d,%.4f,%.4f,%.4f\n" % (pose.header.stamp.secs*1e9+pose.header.stamp.nsecs, pose.pose.position.x, pose.pose.position.y, pose.pose.position.z))
 
 if __name__ == '__main__':
     f1 = open("/home/mcube/egm_control/data/measured_pose_" + str(int(time.time())) + ".txt", "w")
