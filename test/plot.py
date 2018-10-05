@@ -6,43 +6,7 @@ import numpy as np
 from os.path import expanduser
 import stats as stats
 
-<<<<<<< HEAD
 dir = expanduser("~/egm_control/data")
-=======
-home = expanduser("~")
-
-def csv_to_arrays(csvname, t, x):
-	with open(csvname,'r') as csvfile:
-	    plots = csv.reader(csvfile, delimiter=',')
-	    tref = float(next(plots)[0])
-	    xref = float(next(plots)[1])
-	    for row in plots:
-	        t.append((float(row[0])-tref)/1.0e9)
-	        x.append(float(row[1])-xref)
-
-def import_test(csvname):
-	t1 = []
-	t2 = []
-	x1 = []
-	x2 = []
-	csv_to_arrays(home + '/egm_control/data/measured_pose_' + csvname + '.txt', t1, x1)
-	csv_to_arrays(home + '/egm_control/data/sent_pose_' + csvname + '.txt', t2, x2)
-	index_tref = np.min(np.where(np.array(t1) > 0.5))
-	t1 = t1[index_tref:]
-	t1[:] = [t-0.5 for t in t1]
-	x1 = x1[index_tref:]
-	t2 = t2[index_tref:]
-	t2[:] = [t-0.5 for t in t2]
-	x2 = x2[index_tref:]
-	return t1, t2, x1, x2
-
-def get_last_file():
-    dirFiles = os.listdir(home + '/egm_control/data')
-    if 'plot.py' in dirFiles: dirFiles.remove('plot.py')
-    if 'old' in dirFiles: dirFiles.remove('old')
-    dirFiles.sort(key=lambda f: int(filter(str.isdigit, f)))
-    return filter(str.isdigit, dirFiles[-1])
->>>>>>> 335f065583b2d711936075031bc2ec166160d516
 
 if sys.argv[1] == 'last':
     m = stats.get_last_file(dir)
