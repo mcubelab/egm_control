@@ -1,3 +1,3 @@
 <launch>
-  <node pkg="egm_control" name="EGMControl" type="EGMControl" launch-prefix="valgrind --log-file=~/egm_control/data/valgrind_egmcontrol.log" />
+  <node pkg="egm_control" name="EGMControl" type="EGMControl" launch-prefix="valgrind --tool=callgrind " />
 </launch>

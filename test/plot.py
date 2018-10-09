@@ -6,7 +6,7 @@ import numpy as np
 from os.path import expanduser
 import stats as stats
 
-if sys.argv[3]:
+if len(sys.argv) > 3:
     dir = expanduser("~/egm_control/data/" + sys.argv[3])
 else:
     dir = expanduser("~/egm_control/data")

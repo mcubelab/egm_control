@@ -34,9 +34,9 @@ int main(int argc, char **argv)
     ros_helper.publish_sent_pose(sent_pose);
 
     feedback = robot_controller.get_robot_feedback();
-    measured_pose = EgmFeedBack_to_PoseStamped(&fb);
+    EgmFeedBack_to_PoseStamped(&feedback, measured_pose);
     ros_helper.publish_measured_pose(measured_pose);
-    joint_state = EgmFeedBack_to_JointState(&fb);
+    EgmFeedBack_to_JointState(&feedback, joint_state);
     ros_helper.publish_joint_state(joint_state);
 
     rate.sleep();

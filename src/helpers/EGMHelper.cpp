@@ -16,18 +16,15 @@ uint32_t get_tick()
   return now.tv_sec * 1000 + now.tv_nsec / 1000000;
 }
 
-geometry_msgs::PoseStamped Pose_to_PoseStamped(geometry_msgs::Pose pose, ros::Time time)
+void Pose_to_PoseStamped(const geometry_msgs::Pose& pose, ros::Time time, geometry_msgs::PoseStamped& posestamped)
 {
-  geometry_msgs::PoseStamped posestamped;
   posestamped.header.stamp = time;
   posestamped.header.frame_id = "map";
   posestamped.pose = pose;
-  return posestamped;
 }
 
-geometry_msgs::Pose EgmFeedBack_to_Pose(abb::egm::EgmFeedBack *fb)
+void EgmFeedBack_to_Pose(abb::egm::EgmFeedBack *fb, geometry_msgs::Pose& pose)
 {
-  geometry_msgs::Pose pose;
   pose.position.x = fb->cartesian().pos().x();
   pose.position.y = fb->cartesian().pos().y();
   pose.position.z = fb->cartesian().pos().z();
@@ -35,21 +32,17 @@ geometry_msgs::Pose EgmFeedBack_to_Pose(abb::egm::EgmFeedBack *fb)
   pose.orientation.y = fb->cartesian().orient().u2();
   pose.orientation.z = fb->cartesian().orient().u3();
   pose.orientation.w = fb->cartesian().orient().u0();
-  return pose;
 }
 
-geometry_msgs::PoseStamped EgmFeedBack_to_PoseStamped(abb::egm::EgmFeedBack *fb)
+void EgmFeedBack_to_PoseStamped(abb::egm::EgmFeedBack *fb, geometry_msgs::PoseStamped& posestamped)
 {
-  geometry_msgs::PoseStamped posestamped;
   posestamped.header.stamp = ros::Time::now();
   posestamped.header.frame_id = "map";
-  posestamped.pose = EgmFeedBack_to_Pose(fb);
-  return posestamped;
+  EgmFeedBack_to_Pose(fb, posestamped.pose);
 }
 
-sensor_msgs::JointState EgmFeedBack_to_JointState(abb::egm::EgmFeedBack *fb)
+void EgmFeedBack_to_JointState(abb::egm::EgmFeedBack *fb, sensor_msgs::JointState& js)
 {
-  sensor_msgs::JointState js;
   js.header.stamp = ros::Time::now();
   js.name = {"joint1", "joint2", "joint3", "joint4", "joint5", "joint6"};
   js.position.resize(6);
@@ -57,7 +50,6 @@ sensor_msgs::JointState EgmFeedBack_to_JointState(abb::egm::EgmFeedBack *fb)
     js.position[i] = fb->joints().joints(i);
   js.velocity = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
   js.effort = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-  return js;
 }
 
 abb::egm::EgmSensor* Pose_to_EgmSensor(geometry_msgs::Pose pose, unsigned int seqno, uint32_t tick)
@@ -91,14 +83,13 @@ abb::egm::EgmSensor* Pose_to_EgmSensor(geometry_msgs::Pose pose, unsigned int se
   return msg;
 }
 
-geometry_msgs::Pose translate_pose_by_velocity(geometry_msgs::Pose pose, geometry_msgs::Pose vel, double dt)
+void translate_pose_by_velocity(geometry_msgs::Pose pose, geometry_msgs::Pose vel, double dt, geometry_msgs::Pose& target)
 {
-  pose.position.x += vel.position.x * dt;
-  pose.position.y += vel.position.y * dt;
-  pose.position.z += vel.position.z * dt;
-  pose.orientation.x += 0.5*dt*(pose.orientation.w*vel.orientation.x - pose.orientation.y*vel.orientation.z + pose.orientation.z*vel.orientation.y);
-  pose.orientation.y += 0.5*dt*(pose.orientation.w*vel.orientation.y + pose.orientation.x*vel.orientation.z - pose.orientation.z*vel.orientation.x);
-  pose.orientation.z += 0.5*dt*(pose.orientation.w*vel.orientation.z + pose.orientation.x*vel.orientation.y + pose.orientation.y*vel.orientation.x);
-  pose.orientation.w -= 0.5*dt*(pose.orientation.x*vel.orientation.x + pose.orientation.y*vel.orientation.y + vel.orientation.z*vel.orientation.z);
-  return pose;
+  target.position.x += vel.position.x * dt;
+  target.position.y += vel.position.y * dt;
+  target.position.z += vel.position.z * dt;
+  target.orientation.x += 0.5*dt*(pose.orientation.w*vel.orientation.x - pose.orientation.y*vel.orientation.z + pose.orientation.z*vel.orientation.y);
+  target.orientation.y += 0.5*dt*(pose.orientation.w*vel.orientation.y + pose.orientation.x*vel.orientation.z - pose.orientation.z*vel.orientation.x);
+  target.orientation.z += 0.5*dt*(pose.orientation.w*vel.orientation.z + pose.orientation.x*vel.orientation.y + pose.orientation.y*vel.orientation.x);
+  target.orientation.w -= 0.5*dt*(pose.orientation.x*vel.orientation.x + pose.orientation.y*vel.orientation.y + vel.orientation.z*vel.orientation.z);
 }
