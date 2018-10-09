@@ -51,17 +51,12 @@ sensor_msgs::JointState EgmFeedBack_to_JointState(abb::egm::EgmFeedBack *fb)
 {
   sensor_msgs::JointState js;
   js.header.stamp = ros::Time::now();
-  js.name.push_back("joint1");
-  js.name.push_back("joint2");
-  js.name.push_back("joint3");
-  js.name.push_back("joint4");
-  js.name.push_back("joint5");
-  js.name.push_back("joint6");
-  for (int i = 0; i < 6; i++) {
-    js.position.push_back(fb->joints().joints(i));
-    js.velocity.push_back(0.0);
-    js.effort.push_back(0.0);
-  }
+  js.name = {"joint1", "joint2", "joint3", "joint4", "joint5", "joint6"};
+  js.position.resize(6);
+  for (int i = 0; i < 6; i++)
+    js.position[i] = fb->joints().joints(i);
+  js.velocity = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  js.effort = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
   return js;
 }
 
