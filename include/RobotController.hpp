@@ -40,6 +40,10 @@ private:
 
   geometry_msgs::PoseStamped last_measured_ps;
   geometry_msgs::PoseStamped last_sent_ps;
+  ros::Time last_sent_time;
+  geometry_msgs::Pose target;
+  abb::egm::EgmRobot* last_egm_robot;
+  abb::egm::EgmSensor* last_egm_sensor;
 };
 
 #endif

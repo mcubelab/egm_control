@@ -16,25 +16,29 @@ int main(int argc, char **argv)
   ROSHelper ros_helper = ROSHelper(n);
   RobotController robot_controller = RobotController(n, 6510, x_limits, y_limits, z_limits);
 
-  ROS_INFO("[EGMControl] Ready");
-
   ros::Rate rate(hz);
 
-  geometry_msgs::PoseStamped command_pose, sent_pose;
+  geometry_msgs::PoseStamped command_pose, sent_pose, measured_pose;
+  sensor_msgs::JointState joint_state;
   std::string command_mode;
+  abb::egm::EgmFeedBack feedback;
+  ros::param::param<std::string>("egm_mode", command_mode, "velocity");
+
+  ROS_INFO("[EGMControl] Ready");
 
   while (ros::ok())
   {
+    ros::spinOnce();
     command_pose = ros_helper.get_command_pose();
-    ros::param::param<std::string>("egm_mode", command_mode, "position");
     sent_pose = robot_controller.send_command(command_pose, command_mode, hz);
     ros_helper.publish_sent_pose(sent_pose);
 
-    abb::egm::EgmFeedBack fb = robot_controller.get_robot_feedback();
-    ros_helper.publish_measured_pose(EgmFeedBack_to_PoseStamped(&fb));
-    ros_helper.publish_joint_state(EgmFeedBack_to_JointState(&fb));
+    feedback = robot_controller.get_robot_feedback();
+    measured_pose = EgmFeedBack_to_PoseStamped(&fb);
+    ros_helper.publish_measured_pose(measured_pose);
+    joint_state = EgmFeedBack_to_JointState(&fb);
+    ros_helper.publish_joint_state(joint_state);
 
-    ros::spinOnce();
     rate.sleep();
   }
   delete &ros_helper;
