@@ -1,0 +1,3 @@
+<launch>
+  <node pkg="egm_control" name="example.py" type="example.py" launch-prefix="valgrind --log-file=~/egm_control/data/valgrind_example.log" />
+</launch>
