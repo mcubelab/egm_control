@@ -7,7 +7,7 @@ from geometry_msgs.msg import PoseStamped
 from std_msgs.msg import Header
 
 # All sizes in mm!
-hz = 250.0 # hz
+hz = 248.0 # hz
 config = [
     [0.0, 5.0],
     [5.0, 10.0],
@@ -18,7 +18,7 @@ config = [
     [0.0, 3.0],
     [5.0, 10.0],
     [0.0, 3.0],
-    [-30.0, 5.0],
+    [-60.0, 5.0],
     [0.0, 3.0],
     [5.0, 10.0],
     [0.0, 3.0],
@@ -32,11 +32,11 @@ config = [
     [0.0, 3.0],
     [5.0, 10.0],
     [0.0, 3.0],
-    [-20.0, 5.0]
+    [-40.0, 5.0]
 ]
 
 if __name__ == '__main__':
-    rospy.init_node('example-block', anonymous=True)
+    rospy.init_node('exampleblock', anonymous=True)
     command_pose_pub = rospy.Publisher('/command_pose', PoseStamped, queue_size = 100, latch=True)
 
     rospy.set_param('egm_mode', 'velocity')
@@ -61,7 +61,8 @@ if __name__ == '__main__':
         pose.pose.orientation.w = 0.0
         command_pose_pub.publish(pose)
 
-        if rospy.Time.now().to_sec()-start_time < config[i][1]:
+        if rospy.Time.now().to_sec()-start_time >= config[i][1]:
             i += 1
+            start_time = rospy.Time.now().to_sec()
 
         rate.sleep()

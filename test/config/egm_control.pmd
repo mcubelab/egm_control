@@ -26,15 +26,19 @@ cmd "3-example_controller_-30_10" {
     exec = "rosrun egm_control example.py -30 10";
     host = "localhost";
 }
+cmd "3-example_controller_long" {
+    exec = "rosrun egm_control example-block.py";
+    host = "localhost";
+}
 
-script "1-single-test" {
+script "1-single-test-saver" {
     start cmd "2-datasaver";
     wait ms 500;
     start cmd "3-example_controller_5_10" wait "stopped";
     wait ms 2000;
     stop cmd "2-datasaver";
 }
-script "2-long-test-x10" {
+script "2-long-test-x10-saver" {
     start cmd "2-datasaver";
     wait ms 500;
     start cmd "3-example_controller_5_10" wait "stopped";
@@ -101,4 +105,34 @@ script "2-long-test-x10" {
     wait ms 1000;
 
     start cmd "3-example_controller_-20_10" wait "stopped";
+}
+
+script "2-long-test-x10" {
+    start cmd "3-example_controller_5_10" wait "stopped";
+    wait ms 3000;
+    start cmd "3-example_controller_5_10" wait "stopped";
+    wait ms 3000;
+    start cmd "3-example_controller_5_10" wait "stopped";
+    wait ms 3000;
+    start cmd "3-example_controller_5_10" wait "stopped";
+    wait ms 3000;
+    start cmd "3-example_controller_-30_10" wait "stopped";
+    wait ms 3000;
+    start cmd "3-example_controller_5_10" wait "stopped";
+    wait ms 3000;
+    start cmd "3-example_controller_5_10" wait "stopped";
+    wait ms 3000;
+    start cmd "3-example_controller_5_10" wait "stopped";
+    wait ms 3000;
+    start cmd "3-example_controller_5_10" wait "stopped";
+    wait ms 3000;
+    start cmd "3-example_controller_5_10" wait "stopped";
+    wait ms 3000;
+    start cmd "3-example_controller_5_10" wait "stopped";
+    wait ms 3000;
+    start cmd "3-example_controller_-20_10" wait "stopped";
+}
+
+script "3-long-test-singlepy" {
+    start cmd "3-example_controller_long" wait "stopped";
 }

@@ -1,10 +1,11 @@
 #!/bin/python
 import rosbag
+import sys, os
 import rospy
 import numpy as np
 import matplotlib.pyplot as plt
 
-bag = rosbag.Bag('2018-10-10-11-20-33.bag')
+bag = rosbag.Bag(sys.argv[1])
 speed = 5.0
 pre_time = 0.5
 time = 10.5
@@ -12,12 +13,12 @@ time = 10.5
 start_times = []
 sent_poses_times = []
 sent_poses = []
-prev_seq = 1e9
+prev_vel = 0.0
 
 for topic, msg, t in bag.read_messages(topics='/command_pose'):
-	if prev_seq > msg.header.seq and msg.pose.position.x == speed:
+	if prev_vel == 0.0 and msg.pose.position.x == speed:
 		start_times.append(t)
-	prev_seq = msg.header.seq
+	prev_vel = msg.pose.position.x
 
 for start_time in start_times:
 	t0 = []
@@ -42,7 +43,7 @@ for start_time in start_times:
 		t2.append(t.to_sec()-start_time.to_sec())
 		x2.append(msg.pose.position.x-xref)
 
-	print(t1[np.min(np.where(np.array(x1) > x1[0]))]-t0[0])
+	print((t1[np.min(np.where(np.array(x1) > x1[0]))]-t0[np.min(np.where(np.array(x0) > 0))])*1000)
 	ax = plt.subplot(111)
 	ax.plot(t0, x0, label='Expected position (theoretical), '+str(speed)+' mm/s')
 	ax.plot(t1, x1, label='Position (sent), '+str(speed)+' mm/s')
