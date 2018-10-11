@@ -6,10 +6,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 bag = rosbag.Bag(sys.argv[1])
-plot = False
+plot = True
 speed = 5.0
 pre_time = 0.5
-time = 10.5
+time = 11.5
 
 start_times = []
 prev_vel = 0.0
@@ -66,7 +66,17 @@ for start_time in start_times:
 				a2.append((v2[-1]-v2[-2])/(msg.header.stamp.to_sec()-prev_x2_time))
 			prev_x2_time = msg.header.stamp.to_sec()
 
-	d1.append((t1[np.min(np.where(np.array(x1) > x1[0]))]-t0[np.min(np.where(np.array(x0) > 0))])*1000)
+	d1.append((t1[np.min(np.where(np.array(x1) > x1[0]))]-t0[np.min(np.where(np.array(x0) > 0))])*1000.0)
+	# print((t1[np.min(np.where(np.array(x1) > x1[0]))]-t0[np.min(np.where(np.array(x0) > 0))])*1000)
+
+	d2ind = []
+	start = np.min(np.where(np.array(t1) >= 1.0))
+	end = np.min(np.where(np.array(t1) >= time-2.0))
+	for i in range(start, end):
+		d2ind.append(t2[np.min(np.where(np.array(x2) >= x1[i]))]-t1[i])
+	d2.append(np.average(d2ind)*1000.0)
+
+	d3.append((t2[np.min(np.where(abs(np.array(x2)-x1[-1]) < 0.01))]-t1[np.min(np.where(np.array(x1) == x1[-1]))])*1000.0)
 
 	if plot:
 		ax = plt.subplot(111)
@@ -99,3 +109,21 @@ for start_time in start_times:
 		ax.set_position([chartBox.x0, chartBox.y0, chartBox.width*0.6, chartBox.height])
 		ax.legend(loc='upper center', bbox_to_anchor=(1.45, 0.8), shadow=True, ncol=1)
 		plt.show()
+
+print("Movement start delay (delta t1)")
+print("min: " + str(np.min(d1)) + " ms")
+print("avg: " + str(np.average(d1)) + " ms")
+print("max: " + str(np.max(d1)) + " ms")
+print("std: " + str(np.std(d1)) + " ms")
+
+print("Mid-measurement delay, sent-measured positions (delta t2)")
+print("min: " + str(np.min(d2)) + " ms")
+print("avg: " + str(np.average(d2)) + " ms")
+print("max: " + str(np.max(d2)) + " ms")
+print("std: " + str(np.std(d2)) + " ms")
+
+print("Stabilization delay, sent-measured positions (delta t3)")
+print("min: " + str(np.min(d3)) + " ms")
+print("avg: " + str(np.average(d3)) + " ms")
+print("max: " + str(np.max(d3)) + " ms")
+print("std: " + str(np.std(d3)) + " ms")
