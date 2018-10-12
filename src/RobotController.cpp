@@ -6,8 +6,7 @@ RobotController::RobotController(ros::NodeHandle n, int udpPort, limits x_limits
   : seqno(0), start_tick(get_tick()), udpPort(udpPort), x_limits(x_limits), y_limits(y_limits), z_limits(z_limits)
 {
   sock = new UDPSocket(udpPort);
-  abb::egm::EgmFeedBack fb = this->get_robot_feedback();
-  EgmFeedBack_to_PoseStamped(&fb, last_measured_ps);
+  flush_robot_data();
   last_sent_ps = last_measured_ps;
 }
 
@@ -16,7 +15,7 @@ RobotController::~RobotController()
   delete sock;
 }
 
-abb::egm::EgmFeedBack RobotController::get_robot_feedback()
+void RobotController::flush_robot_data()
 {
   messageSize = sock->recvFrom(inBuffer, MAX_BUFFER-1, sourceAddr, sourcePort);
   last_egm_robot = new abb::egm::EgmRobot();
@@ -24,10 +23,22 @@ abb::egm::EgmFeedBack RobotController::get_robot_feedback()
   if (messageSize < 0) {
     // TODO: Should be improved
     ROS_INFO("[EGMControl] Failed to receive message from robot");
-    return last_egm_robot->feedback();
+    return;
   }
   last_egm_robot->ParseFromArray(inBuffer, messageSize);
-  return last_egm_robot->feedback();
+  last_fb = last_egm_robot->feedback();
+  EgmFeedBack_to_PoseStamped(&last_fb, last_measured_ps);
+  EgmFeedBack_to_JointState(&last_fb, last_measured_js);
+}
+
+void RobotController::get_measured_pose(geometry_msgs::PoseStamped& posestamped)
+{
+  posestamped = last_measured_ps;
+}
+
+void RobotController::get_measured_js(sensor_msgs::JointState& js)
+{
+  js = last_measured_js;
 }
 
 geometry_msgs::PoseStamped RobotController::send_command(geometry_msgs::PoseStamped command_pose, std::string command_mode, double hz)

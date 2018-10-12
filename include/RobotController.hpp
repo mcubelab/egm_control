@@ -20,6 +20,10 @@ public:
   RobotController(ros::NodeHandle n, int udpPort, limits x_limits, limits y_limits, limits z_limits);
   ~RobotController();
 
+  void flush_robot_data();
+  void get_measured_pose(geometry_msgs::PoseStamped& posestamped);
+  void get_measured_js(sensor_msgs::JointState& js);
+
   abb::egm::EgmFeedBack get_robot_feedback();
   geometry_msgs::PoseStamped send_command(geometry_msgs::PoseStamped command_pose, std::string command_mode, double hz);
 
@@ -39,9 +43,11 @@ private:
   limits z_limits;
 
   geometry_msgs::PoseStamped last_measured_ps;
+  sensor_msgs::JointState last_measured_js;
   geometry_msgs::PoseStamped last_sent_ps;
   ros::Time new_sent_time;
   geometry_msgs::Pose target;
+  abb::egm::EgmFeedBack last_fb;
   abb::egm::EgmRobot* last_egm_robot;
   abb::egm::EgmSensor* last_egm_sensor;
 };

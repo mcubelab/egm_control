@@ -33,10 +33,10 @@ int main(int argc, char **argv)
     sent_pose = robot_controller.send_command(command_pose, command_mode, hz);
     ros_helper.publish_sent_pose(sent_pose);
 
-    feedback = robot_controller.get_robot_feedback();
-    EgmFeedBack_to_PoseStamped(&feedback, measured_pose);
+    robot_controller.flush_robot_data();
+    robot_controller.get_measured_pose(measured_pose);
+    robot_controller.get_measured_js(joint_state);
     ros_helper.publish_measured_pose(measured_pose);
-    EgmFeedBack_to_JointState(&feedback, joint_state);
     ros_helper.publish_joint_state(joint_state);
 
     rate.sleep();
