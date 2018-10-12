@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 bag = rosbag.Bag(sys.argv[1])
-plot = True
+plot = False
 speed = 5.0
 pre_time = 0.5
 time = 11.5
@@ -18,6 +18,8 @@ for topic, msg, t in bag.read_messages(topics='/command_pose'):
 	if prev_vel == 0.0 and msg.pose.position.x == speed:
 		start_times.append(msg.header.stamp)
 	prev_vel = msg.pose.position.x
+
+print("Number of measurements: " + str(len(start_times)))
 
 d1 = []
 d2 = []
