@@ -6,8 +6,11 @@ from sensor_msgs.msg import JointState
 from geometry_msgs.msg import PoseStamped
 from std_msgs.msg import Header
 
-initial_pos = [300, 0, 178.2]
+initial_pos = [300.0, 0.0, 178.2]
 tol = 5.0 # mm tolerance for continuity between functions
+
+def f0(t):
+    return initial_pos
 
 def f1(t):
     return [
@@ -55,6 +58,7 @@ def f6(t):
 hz = 248.0 # hz
 config = [
     # [vx, vy, vz, t]
+    [f0, 5.0],
     [f1, 5.0],
     [f2, 8*np.pi],
     [f3, 5.0],
@@ -106,7 +110,6 @@ if __name__ == '__main__':
                     print('Command pose sending stopped to avoid high dynamic load in robot.')
                     break
             i += 1
-            print(i)
             start_time = rospy.Time.now().to_sec()
 
         rate.sleep()
