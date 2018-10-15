@@ -30,6 +30,18 @@ cmd "3-example_controller_long" {
     exec = "rosrun egm_control example-block.py";
     host = "localhost";
 }
+cmd "3-keep-moving" {
+    exec = "rosrun egm_control keep-moving.py";
+    host = "localhost";
+}
+cmd "4-robot-perception" {
+    exec = "roslaunch egm_control_config robot_perception.launch";
+    host = "localhost";
+}
+cmd "5-display-urdf" {
+    exec = "roslaunch egm_control_config display_urdf.launch";
+    host = "localhost";
+}
 
 script "1-single-test-saver" {
     start cmd "2-datasaver";

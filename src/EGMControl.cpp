@@ -2,9 +2,9 @@
 #include "ROSHelper.hpp"
 #include "RobotController.hpp"
 
-limits x_limits = limits(100.0, 600.0);
-limits y_limits = limits(-400.0, 400.0);
-limits z_limits = limits(0.0, 500.0);
+limits x_limits = limits(0.1, 0.6);
+limits y_limits = limits(-0.4, 0.4);
+limits z_limits = limits(0.0, 0.5);
 
 double hz = 250.0;
 
@@ -22,7 +22,7 @@ int main(int argc, char **argv)
   sensor_msgs::JointState joint_state;
   std::string command_mode;
   abb::egm::EgmFeedBack feedback;
-  ros::param::param<std::string>("egm_mode", command_mode, "velocity");
+  ros::param::param<std::string>("egm_mode", command_mode, "position");
 
   ROS_INFO("[EGMControl] Ready");
 

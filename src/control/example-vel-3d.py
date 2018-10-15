@@ -55,10 +55,10 @@ if __name__ == '__main__':
         pose.header = Header()
         pose.header.stamp = rospy.Time.now()
         pose.header.frame_id = "map"
-        # Position in mm or velocity in mm/s
-        pose.pose.position.x = config[i][0]
-        pose.pose.position.y = config[i][1]
-        pose.pose.position.z = config[i][2]
+        # Velocity in mm/s (converted to m/s)
+        pose.pose.position.x = config[i][0]/1000.0
+        pose.pose.position.y = config[i][1]/1000.0
+        pose.pose.position.z = config[i][2]/1000.0
         # Orientation or angular velocity in xyzw
         pose.pose.orientation.x = 0.0
         pose.pose.orientation.y = 0.0
