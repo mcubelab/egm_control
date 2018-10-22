@@ -2,137 +2,51 @@ cmd "0-roscore" {
     exec = "roscore";
     host = "localhost";
 }
-cmd "1-egm_control-py" {
-    exec = "rosrun egm_control EGMControl.py";
+cmd "0-vicon_bridge" {
+    exec = "roslaunch vicon_bridge vicon.launch";
     host = "localhost";
 }
 cmd "1-egm_control-cpp" {
     exec = "rosrun egm_control EGMControl";
     host = "localhost";
 }
-cmd "2-datasaver" {
-    exec = "rosrun egm_control datasaver.py";
+cmd "2-rosbag-record" {
+    exec = "rosbag record -o /home/mcube/egm_control/data/params /command_pose /sent_pose /measured_pose /vicon/CalibViconPlate/CalibViconPlate";
     host = "localhost";
 }
 cmd "3-example_controller_5_10" {
-    exec = "rosrun egm_control example.py 5 10";
+    exec = "rosrun egm_control example-vel-1d.py 5 10";
     host = "localhost";
 }
 cmd "3-example_controller_-20_10" {
-    exec = "rosrun egm_control example.py -20 10";
+    exec = "rosrun egm_control example-vel-1d.py -20 10";
     host = "localhost";
 }
 cmd "3-example_controller_-30_10" {
-    exec = "rosrun egm_control example.py -30 10";
+    exec = "rosrun egm_control example-vel-1d.py -30 10";
     host = "localhost";
 }
-cmd "3-example_controller_long" {
-    exec = "rosrun egm_control example-block.py";
+cmd "3-example-vel-3d" {
+    exec = "rosrun egm_control example-vel-3d.py";
+    host = "localhost";
+}
+cmd "3-keep-moving" {
+    exec = "rosrun egm_control keep-moving.py";
+    host = "localhost";
+}
+cmd "4-robot-perception" {
+    exec = "roslaunch egm_control_config robot_perception.launch";
+    host = "localhost";
+}
+cmd "5-display-urdf" {
+    exec = "roslaunch egm_control_config display_urdf.launch";
     host = "localhost";
 }
 
-script "1-single-test-saver" {
-    start cmd "2-datasaver";
+script "1-single-test" {
+    start cmd "2-rosbag-record";
     wait ms 500;
-    start cmd "3-example_controller_5_10" wait "stopped";
-    wait ms 2000;
-    stop cmd "2-datasaver";
-}
-script "2-long-test-x10-saver" {
-    start cmd "2-datasaver";
-    wait ms 500;
-    start cmd "3-example_controller_5_10" wait "stopped";
-    wait ms 2000;
-    stop cmd "2-datasaver";
-    wait ms 1000;
-    start cmd "2-datasaver";
-    wait ms 500;
-    start cmd "3-example_controller_5_10" wait "stopped";
-    wait ms 2000;
-    stop cmd "2-datasaver";
-    wait ms 1000;
-    start cmd "2-datasaver";
-    wait ms 500;
-    start cmd "3-example_controller_5_10" wait "stopped";
-    wait ms 2000;
-    stop cmd "2-datasaver";
-    wait ms 1000;
-    start cmd "2-datasaver";
-    wait ms 500;
-    start cmd "3-example_controller_5_10" wait "stopped";
-    wait ms 2000;
-    stop cmd "2-datasaver";
-    wait ms 1000;
-
-    start cmd "3-example_controller_-30_10" wait "stopped";
-    wait ms 1000;
-
-    start cmd "2-datasaver";
-    wait ms 500;
-    start cmd "3-example_controller_5_10" wait "stopped";
-    wait ms 2000;
-    stop cmd "2-datasaver";
-    wait ms 1000;
-    start cmd "2-datasaver";
-    wait ms 500;
-    start cmd "3-example_controller_5_10" wait "stopped";
-    wait ms 2000;
-    stop cmd "2-datasaver";
-    wait ms 1000;
-    start cmd "2-datasaver";
-    wait ms 500;
-    start cmd "3-example_controller_5_10" wait "stopped";
-    wait ms 2000;
-    stop cmd "2-datasaver";
-    wait ms 1000;
-    start cmd "2-datasaver";
-    wait ms 500;
-    start cmd "3-example_controller_5_10" wait "stopped";
-    wait ms 2000;
-    stop cmd "2-datasaver";
-    wait ms 1000;
-    start cmd "2-datasaver";
-    wait ms 500;
-    start cmd "3-example_controller_5_10" wait "stopped";
-    wait ms 2000;
-    stop cmd "2-datasaver";
-    wait ms 1000;
-    start cmd "2-datasaver";
-    wait ms 500;
-    start cmd "3-example_controller_5_10" wait "stopped";
-    wait ms 2000;
-    stop cmd "2-datasaver";
-    wait ms 1000;
-
-    start cmd "3-example_controller_-20_10" wait "stopped";
-}
-
-script "2-long-test-x10" {
-    start cmd "3-example_controller_5_10" wait "stopped";
-    wait ms 3000;
-    start cmd "3-example_controller_5_10" wait "stopped";
-    wait ms 3000;
-    start cmd "3-example_controller_5_10" wait "stopped";
-    wait ms 3000;
-    start cmd "3-example_controller_5_10" wait "stopped";
-    wait ms 3000;
-    start cmd "3-example_controller_-30_10" wait "stopped";
-    wait ms 3000;
-    start cmd "3-example_controller_5_10" wait "stopped";
-    wait ms 3000;
-    start cmd "3-example_controller_5_10" wait "stopped";
-    wait ms 3000;
-    start cmd "3-example_controller_5_10" wait "stopped";
-    wait ms 3000;
-    start cmd "3-example_controller_5_10" wait "stopped";
-    wait ms 3000;
-    start cmd "3-example_controller_5_10" wait "stopped";
-    wait ms 3000;
-    start cmd "3-example_controller_5_10" wait "stopped";
-    wait ms 3000;
-    start cmd "3-example_controller_-20_10" wait "stopped";
-}
-
-script "3-long-test-singlepy" {
-    start cmd "3-example_controller_long" wait "stopped";
+    start cmd "3-example-vel-3d" wait "stopped";
+    wait ms 5000;
+    stop cmd "2-rosbag-record";
 }

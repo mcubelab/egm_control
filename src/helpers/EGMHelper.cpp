@@ -19,15 +19,15 @@ uint32_t get_tick()
 void Pose_to_PoseStamped(const geometry_msgs::Pose& pose, ros::Time time, geometry_msgs::PoseStamped& posestamped)
 {
   posestamped.header.stamp = time;
-  posestamped.header.frame_id = "map";
+  posestamped.header.frame_id = "world";
   posestamped.pose = pose;
 }
 
 void EgmFeedBack_to_Pose(abb::egm::EgmFeedBack *fb, geometry_msgs::Pose& pose)
 {
-  pose.position.x = fb->cartesian().pos().x();
-  pose.position.y = fb->cartesian().pos().y();
-  pose.position.z = fb->cartesian().pos().z();
+  pose.position.x = fb->cartesian().pos().x()/1000.0;
+  pose.position.y = fb->cartesian().pos().y()/1000.0;
+  pose.position.z = fb->cartesian().pos().z()/1000.0;
   pose.orientation.x = fb->cartesian().orient().u1();
   pose.orientation.y = fb->cartesian().orient().u2();
   pose.orientation.z = fb->cartesian().orient().u3();
@@ -37,7 +37,7 @@ void EgmFeedBack_to_Pose(abb::egm::EgmFeedBack *fb, geometry_msgs::Pose& pose)
 void EgmFeedBack_to_PoseStamped(abb::egm::EgmFeedBack *fb, geometry_msgs::PoseStamped& posestamped)
 {
   posestamped.header.stamp = ros::Time::now();
-  posestamped.header.frame_id = "map";
+  posestamped.header.frame_id = "world";
   EgmFeedBack_to_Pose(fb, posestamped.pose);
 }
 
@@ -60,9 +60,9 @@ abb::egm::EgmSensor* Pose_to_EgmSensor(geometry_msgs::Pose pose, unsigned int se
   header->set_tm(tick);
 
   abb::egm::EgmCartesian *pc = new abb::egm::EgmCartesian();
-  pc->set_x(pose.position.x);
-  pc->set_y(pose.position.y);
-  pc->set_z(pose.position.z);
+  pc->set_x(pose.position.x*1000.0);
+  pc->set_y(pose.position.y*1000.0);
+  pc->set_z(pose.position.z*1000.0);
 
   abb::egm::EgmQuaternion *pq = new abb::egm::EgmQuaternion();
   pq->set_u0(pose.orientation.w);

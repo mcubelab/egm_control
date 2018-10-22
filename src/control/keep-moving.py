@@ -26,49 +26,13 @@ def f2(t):
         initial_pos[2]
     ]
 
-def f3(t):
-    return [
-        initial_pos[0] + 0.02 - 0.004*t,
-        initial_pos[1] + 0.004*t,
-        initial_pos[2]
-    ]
-
-def f4(t):
-    return [
-        initial_pos[0] - 0.004*t,
-        initial_pos[1] + 0.02 - 0.004*t,
-        initial_pos[2]
-    ]
-
-def f5(t):
-    return [
-        initial_pos[0] - 0.02 + 0.004*t,
-        initial_pos[1] - 0.004*t,
-        initial_pos[2]
-    ]
-
-def f6(t):
-    return [
-        initial_pos[0] + 0.004*t,
-        initial_pos[1] - 0.02 + 0.004*t,
-        initial_pos[2]
-    ]
-
 # All sizes in mm!
 hz = 248.0 # hz
 config = [
     # [vx, vy, vz, t]
     [f0, 5.0],
     [f1, 5.0],
-    [f2, 8*np.pi],
-    [f3, 5.0],
-    [f4, 5.0],
-    [f5, 5.0],
-    [f6, 5.0],
-    [f3, 5.0],
-    [f4, 5.0],
-    [f5, 5.0],
-    [f6, 5.0],
+    [f2, 1.0e9],
 ]
 
 if __name__ == '__main__':
@@ -87,8 +51,8 @@ if __name__ == '__main__':
         pose = PoseStamped()
         pose.header = Header()
         pose.header.stamp = now
-        pose.header.frame_id = "world"
-        # Position in m or velocity in m/s
+        pose.header.frame_id = "map"
+        # Position in mm or velocity in mm/s
         pos = config[i][0](t)
         pose.pose.position.x = pos[0]
         pose.pose.position.y = pos[1]

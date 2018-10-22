@@ -3,7 +3,7 @@
 ROSHelper::ROSHelper(ros::NodeHandle n)
 {
   command_pose_sub = n.subscribe("/command_pose", 100, &ROSHelper::load_command_pose, this);
-  joint_state_pub = n.advertise<sensor_msgs::JointState>("joint_state", 100);
+  joint_state_pub = n.advertise<sensor_msgs::JointState>("joint_states", 100);
   measured_pose_pub = n.advertise<geometry_msgs::PoseStamped>("measured_pose", 100);
   sent_pose_pub = n.advertise<geometry_msgs::PoseStamped>("sent_pose", 100);
   command_poses = std::vector<geometry_msgs::PoseStamped>();
