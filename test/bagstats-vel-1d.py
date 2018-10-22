@@ -5,9 +5,11 @@ import rospy
 import numpy as np
 import matplotlib.pyplot as plt
 
+plot = True
+vicon = True
+
 bag = rosbag.Bag(sys.argv[1])
-plot = False
-speed = 5.0
+speed = 0.03
 pre_time = 0.5
 time = 11.5
 
@@ -32,6 +34,8 @@ for start_time in start_times:
 	x1 = []
 	t2 = []
 	x2 = []
+	t3 = []
+	x3 = []
 	v1 = []
 	a1 = []
 	v2 = []
@@ -68,6 +72,14 @@ for start_time in start_times:
 				a2.append((v2[-1]-v2[-2])/(msg.header.stamp.to_sec()-prev_x2_time))
 			prev_x2_time = msg.header.stamp.to_sec()
 
+	if vicon:
+		x3ref = 0.0
+		for topic, msg, t in bag.read_messages(topics='/vicon/CalibViconPlate/CalibViconPlate', start_time=start_time-rospy.rostime.Duration.from_sec(pre_time), end_time=start_time+rospy.rostime.Duration.from_sec(time)):
+			if x3ref == 0.0:
+				x3ref = msg.transform.translation.x
+			t3.append(msg.header.stamp.to_sec()-start_time.to_sec())
+			x3.append(msg.transform.translation.x-x3ref)
+
 	d1.append((t1[np.min(np.where(np.array(x1) > x1[0]))]-t0[np.min(np.where(np.array(x0) > 0))])*1000.0)
 	# print((t1[np.min(np.where(np.array(x1) > x1[0]))]-t0[np.min(np.where(np.array(x0) > 0))])*1000)
 
@@ -78,35 +90,37 @@ for start_time in start_times:
 		d2ind.append(t2[np.min(np.where(np.array(x2) >= x1[i]))]-t1[i])
 	d2.append(np.average(d2ind)*1000.0)
 
-	d3.append((t2[np.min(np.where(abs(np.array(x2)-x1[-1]) < 0.01))]-t1[np.min(np.where(np.array(x1) == x1[-1]))])*1000.0)
+	d3.append((t2[np.min(np.where(abs(np.array(x2)-x1[-1]) < 0.01/1000.0))]-t1[np.min(np.where(np.array(x1) == x1[-1]))])*1000.0)
 
 	if plot:
 		ax = plt.subplot(111)
-		ax.plot(t2, x2, label='Position (measured), '+str(speed)+' mm/s')
-		ax.plot(t1, x1, label='Position (sent), '+str(speed)+' mm/s')
-		ax.plot(t0, x0, '--', label='Expected position (theoretical), '+str(speed)+' mm/s')
+		ax.plot(t2, x2, label='Position (measured), '+str(speed)+' m/s')
+		if vicon:
+			ax.plot(t3, x3, label='Position (vicon), '+str(speed)+' m/s')
+		ax.plot(t1, x1, label='Position (sent), '+str(speed)+' m/s')
+		ax.plot(t0, x0, '--', label='Expected position (theoretical), '+str(speed)+' m/s')
 		plt.xlabel('Time (s)')
-		plt.ylabel('Traveled distance (mm)')
+		plt.ylabel('Traveled distance (m)')
 		chartBox = ax.get_position()
 		ax.set_position([chartBox.x0, chartBox.y0, chartBox.width*0.6, chartBox.height])
 		ax.legend(loc='upper center', bbox_to_anchor=(1.45, 0.8), shadow=True, ncol=1)
 		plt.show()
 
 		ax = plt.subplot(111)
-		ax.plot(t2[1:], v2, label='Velocity (measured), '+str(speed)+' mm/s')
-		ax.plot(t1[1:], v1, label='Velocity (sent), '+str(speed)+' mm/s')
+		ax.plot(t2[1:], v2, label='Velocity (measured), '+str(speed)+' m/s')
+		ax.plot(t1[1:], v1, label='Velocity (sent), '+str(speed)+' m/s')
 		plt.xlabel('Time (s)')
-		plt.ylabel('Velocity (mm/s)')
+		plt.ylabel('Velocity (m/s)')
 		chartBox = ax.get_position()
 		ax.set_position([chartBox.x0, chartBox.y0, chartBox.width*0.6, chartBox.height])
 		ax.legend(loc='upper center', bbox_to_anchor=(1.45, 0.8), shadow=True, ncol=1)
 		plt.show()
 
 		ax = plt.subplot(111)
-		ax.plot(t2[2:], a2, label='Acceleration (measured), '+str(speed)+' mm/s')
-		ax.plot(t1[2:], a1, label='Acceleration (sent), '+str(speed)+' mm/s')
+		ax.plot(t2[2:], a2, label='Acceleration (measured), '+str(speed)+' m/s')
+		ax.plot(t1[2:], a1, label='Acceleration (sent), '+str(speed)+' m/s')
 		plt.xlabel('Time (s)')
-		plt.ylabel('Acceleration (mm/s^2)')
+		plt.ylabel('Acceleration (m/s^2)')
 		chartBox = ax.get_position()
 		ax.set_position([chartBox.x0, chartBox.y0, chartBox.width*0.6, chartBox.height])
 		ax.legend(loc='upper center', bbox_to_anchor=(1.45, 0.8), shadow=True, ncol=1)
