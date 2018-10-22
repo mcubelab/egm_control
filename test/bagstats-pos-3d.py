@@ -152,6 +152,7 @@ for topic, msg, t in bag.read_messages(topics='/measured_pose', start_time=start
 # # print("std for z: " + str(np.std(d3z)) + " ms")
 
 if plot:
+	plt.figure(1)
 	ax = plt.subplot(111)
 	ax.plot(t2, x2, label='Position x (measured), '+str(speed)+' mm/s')
 	ax.plot(t1, x1, label='Position x (sent), '+str(speed)+' mm/s')
@@ -161,8 +162,8 @@ if plot:
 	chartBox = ax.get_position()
 	ax.set_position([chartBox.x0, chartBox.y0, chartBox.width*0.6, chartBox.height])
 	ax.legend(loc='upper center', bbox_to_anchor=(1.45, 0.8), shadow=True, ncol=1)
-	plt.show()
 
+	plt.figure(2)
 	ax = plt.subplot(111)
 	ax.plot(t2, y2, label='Position y (measured), '+str(speed)+' mm/s')
 	ax.plot(t1, y1, label='Position y (sent), '+str(speed)+' mm/s')
@@ -172,8 +173,8 @@ if plot:
 	chartBox = ax.get_position()
 	ax.set_position([chartBox.x0, chartBox.y0, chartBox.width*0.6, chartBox.height])
 	ax.legend(loc='upper center', bbox_to_anchor=(1.45, 0.8), shadow=True, ncol=1)
-	plt.show()
 
+	plt.figure(3)
 	ax = plt.subplot(111)
 	ax.plot(t2, z2, label='Position z (measured), '+str(speed)+' mm/s')
 	ax.plot(t1, z1, label='Position z (sent), '+str(speed)+' mm/s')
@@ -185,6 +186,7 @@ if plot:
 	ax.legend(loc='upper center', bbox_to_anchor=(1.45, 0.8), shadow=True, ncol=1)
 	plt.show()
 
+	plt.figure(4)
 	ax = plt.subplot(111)
 	ax.plot(t2[1:], v2x, label='Velocity x (measured), '+str(speed)+' mm/s')
 	ax.plot(t1[1:], v1x, label='Velocity x (sent), '+str(speed)+' mm/s')
@@ -193,8 +195,8 @@ if plot:
 	chartBox = ax.get_position()
 	ax.set_position([chartBox.x0, chartBox.y0, chartBox.width*0.6, chartBox.height])
 	ax.legend(loc='upper center', bbox_to_anchor=(1.45, 0.8), shadow=True, ncol=1)
-	plt.show()
 
+	plt.figure(5)
 	ax = plt.subplot(111)
 	ax.plot(t2[1:], v2y, label='Velocity y (measured), '+str(speed)+' mm/s')
 	ax.plot(t1[1:], v1y, label='Velocity y (sent), '+str(speed)+' mm/s')
@@ -203,8 +205,8 @@ if plot:
 	chartBox = ax.get_position()
 	ax.set_position([chartBox.x0, chartBox.y0, chartBox.width*0.6, chartBox.height])
 	ax.legend(loc='upper center', bbox_to_anchor=(1.45, 0.8), shadow=True, ncol=1)
-	plt.show()
 
+	plt.figure(6)
 	ax = plt.subplot(111)
 	ax.plot(t2[1:], v2z, label='Velocity z (measured), '+str(speed)+' mm/s')
 	ax.plot(t1[1:], v1z, label='Velocity z (sent), '+str(speed)+' mm/s')
@@ -215,6 +217,7 @@ if plot:
 	ax.legend(loc='upper center', bbox_to_anchor=(1.45, 0.8), shadow=True, ncol=1)
 	plt.show()
 
+	plt.figure(7)
 	ax = plt.subplot(111)
 	ax.plot(t2[2:], a2x, label='Acceleration x (measured), '+str(speed)+' mm/s')
 	ax.plot(t1[2:], a1x, label='Acceleration x (sent), '+str(speed)+' mm/s')
@@ -223,8 +226,8 @@ if plot:
 	chartBox = ax.get_position()
 	ax.set_position([chartBox.x0, chartBox.y0, chartBox.width*0.6, chartBox.height])
 	ax.legend(loc='upper center', bbox_to_anchor=(1.45, 0.8), shadow=True, ncol=1)
-	plt.show()
 
+	plt.figure(8)
 	ax = plt.subplot(111)
 	ax.plot(t2[2:], a2y, label='Acceleration y (measured), '+str(speed)+' mm/s')
 	ax.plot(t1[2:], a1y, label='Acceleration y (sent), '+str(speed)+' mm/s')
@@ -233,8 +236,8 @@ if plot:
 	chartBox = ax.get_position()
 	ax.set_position([chartBox.x0, chartBox.y0, chartBox.width*0.6, chartBox.height])
 	ax.legend(loc='upper center', bbox_to_anchor=(1.45, 0.8), shadow=True, ncol=1)
-	plt.show()
 
+	plt.figure(9)
 	ax = plt.subplot(111)
 	ax.plot(t2[2:], a2z, label='Acceleration z (measured), '+str(speed)+' mm/s')
 	ax.plot(t1[2:], a1z, label='Acceleration z (sent), '+str(speed)+' mm/s')

@@ -45,10 +45,7 @@ geometry_msgs::PoseStamped RobotController::send_command(geometry_msgs::PoseStam
 {
   new_sent_time = ros::Time::now();
   if (command_pose.header.stamp == ros::Time(0)) {
-    if (command_mode == "velocity")
-      target = last_sent_ps.pose;
-    else
-      target = last_measured_ps.pose;
+    target = last_sent_ps.pose;
   } else {
     if (command_mode == "velocity") {
       double dt = (seqno > 0 ? new_sent_time.toSec()-last_sent_ps.header.stamp.toSec() : 1/hz);
