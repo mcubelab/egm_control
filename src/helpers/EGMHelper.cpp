@@ -16,7 +16,7 @@ uint32_t get_tick()
   return now.tv_sec * 1000 + now.tv_nsec / 1000000;
 }
 
-void Pose_to_PoseStamped(const geometry_msgs::Pose& pose, ros::Time time, geometry_msgs::PoseStamped& posestamped)
+void Position_to_PoseStamped(const geometry_msgs::Pose& pose, ros::Time time, geometry_msgs::PoseStamped& posestamped)
 {
   posestamped.header.stamp = time;
   posestamped.header.frame_id = "world";
@@ -52,7 +52,7 @@ void EgmFeedBack_to_JointState(abb::egm::EgmFeedBack *fb, sensor_msgs::JointStat
   js.effort = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 }
 
-abb::egm::EgmSensor* Pose_to_EgmSensor(geometry_msgs::Pose pose, unsigned int seqno, uint32_t tick)
+abb::egm::EgmSensor* Position_to_EgmSensor(geometry_msgs::Pose pose, unsigned int seqno, uint32_t tick)
 {
   abb::egm::EgmHeader* header = new abb::egm::EgmHeader();
   header->set_mtype(abb::egm::EgmHeader_MessageType_MSGTYPE_CORRECTION);
@@ -80,6 +80,29 @@ abb::egm::EgmSensor* Pose_to_EgmSensor(geometry_msgs::Pose pose, unsigned int se
   abb::egm::EgmSensor* msg = new abb::egm::EgmSensor();
   msg->set_allocated_header(header);
   msg->set_allocated_planned(planned);
+  return msg;
+}
+
+abb::egm::EgmSensor* Velocity_to_EgmSensor(geometry_msgs::Pose vel, unsigned int seqno, uint32_t tick)
+{
+  abb::egm::EgmHeader* header = new abb::egm::EgmHeader();
+  header->set_seqno(seqno);
+  header->set_tm(tick);
+
+  abb::egm::EgmCartesianSpeed *cs = new abb::egm::EgmCartesianSpeed();
+  cs->set_value(0, vel.position.x*1000.0);
+  cs->set_value(1, vel.position.y*1000.0);
+  cs->set_value(2, vel.position.z*1000.0);
+  cs->set_value(3, vel.orientation.x);
+  cs->set_value(4, vel.orientation.y);
+  cs->set_value(5, vel.orientation.z);
+
+  abb::egm::EgmSpeedRef *speedref = new abb::egm::EgmSpeedRef();
+  speedref->set_allocated_cartesians(cs);
+
+  abb::egm::EgmSensor* msg = new abb::egm::EgmSensor();
+  msg->set_allocated_header(header);
+  msg->set_allocated_speedref(speedref);
   return msg;
 }
 
