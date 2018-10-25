@@ -86,6 +86,7 @@ abb::egm::EgmSensor* Position_to_EgmSensor(geometry_msgs::Pose pose, unsigned in
 abb::egm::EgmSensor* Velocity_to_EgmSensor(geometry_msgs::Pose vel, unsigned int seqno, uint32_t tick)
 {
   abb::egm::EgmHeader* header = new abb::egm::EgmHeader();
+  header->set_mtype(abb::egm::EgmHeader_MessageType_MSGTYPE_CORRECTION);
   header->set_seqno(seqno);
   header->set_tm(tick);
 
