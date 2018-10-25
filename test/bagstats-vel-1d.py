@@ -95,10 +95,10 @@ for start_time in start_times:
 	if plot:
 		ax = plt.subplot(111)
 		ax.plot(t2, x2, label='Position (measured), '+str(speed)+' m/s')
-		if vicon:
-			ax.plot(t3, x3, label='Position (vicon), '+str(speed)+' m/s')
 		ax.plot(t1, x1, label='Position (sent), '+str(speed)+' m/s')
 		ax.plot(t0, x0, '--', label='Expected position (theoretical), '+str(speed)+' m/s')
+		if vicon:
+			ax.plot(t3, x3, label='Position (vicon), '+str(speed)+' m/s')
 		plt.xlabel('Time (s)')
 		plt.ylabel('Traveled distance (m)')
 		chartBox = ax.get_position()
