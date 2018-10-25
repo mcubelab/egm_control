@@ -16,7 +16,7 @@ uint32_t get_tick()
   return now.tv_sec * 1000 + now.tv_nsec / 1000000;
 }
 
-void Position_to_PoseStamped(const geometry_msgs::Pose& pose, ros::Time time, geometry_msgs::PoseStamped& posestamped)
+void Pose_to_PoseStamped(const geometry_msgs::Pose& pose, ros::Time time, geometry_msgs::PoseStamped& posestamped)
 {
   posestamped.header.stamp = time;
   posestamped.header.frame_id = "world";
@@ -90,12 +90,12 @@ abb::egm::EgmSensor* Velocity_to_EgmSensor(geometry_msgs::Pose vel, unsigned int
   header->set_tm(tick);
 
   abb::egm::EgmCartesianSpeed *cs = new abb::egm::EgmCartesianSpeed();
-  cs->set_value(0, vel.position.x*1000.0);
-  cs->set_value(1, vel.position.y*1000.0);
-  cs->set_value(2, vel.position.z*1000.0);
-  cs->set_value(3, vel.orientation.x);
-  cs->set_value(4, vel.orientation.y);
-  cs->set_value(5, vel.orientation.z);
+  cs->add_value(vel.position.x*1000.0);
+  cs->add_value(vel.position.y*1000.0);
+  cs->add_value(vel.position.z*1000.0);
+  cs->add_value(vel.orientation.x);
+  cs->add_value(vel.orientation.y);
+  cs->add_value(vel.orientation.z);
 
   abb::egm::EgmSpeedRef *speedref = new abb::egm::EgmSpeedRef();
   speedref->set_allocated_cartesians(cs);

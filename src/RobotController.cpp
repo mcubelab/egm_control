@@ -43,8 +43,13 @@ void RobotController::get_measured_js(sensor_msgs::JointState& js)
 
 geometry_msgs::PoseStamped RobotController::send_command(geometry_msgs::PoseStamped command_pose, std::string command_mode, double hz)
 {
-  if (command_mode == "velocity" && command_pose.header.stamp != ros::Time(0)) {
-    target = command_pose.pose;
+  new_sent_time = ros::Time::now();
+  if (command_mode == "velocity") {
+    if(command_pose.header.stamp == ros::Time(0)) {
+      target = geometry_msgs::Pose();
+    } else {
+      target = command_pose.pose;
+    }
     last_egm_sensor = Velocity_to_EgmSensor(target, seqno++, get_tick()-start_tick);
   } else {
     if (command_pose.header.stamp == ros::Time(0)) {
