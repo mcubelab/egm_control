@@ -52,7 +52,7 @@ void EgmFeedBack_to_JointState(abb::egm::EgmFeedBack *fb, sensor_msgs::JointStat
   js.effort = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 }
 
-abb::egm::EgmSensor* Pose_to_EgmSensor(geometry_msgs::Pose pose, unsigned int seqno, uint32_t tick)
+abb::egm::EgmSensor* Position_to_EgmSensor(geometry_msgs::Pose pose, unsigned int seqno, uint32_t tick)
 {
   abb::egm::EgmHeader* header = new abb::egm::EgmHeader();
   header->set_mtype(abb::egm::EgmHeader_MessageType_MSGTYPE_CORRECTION);
@@ -80,6 +80,25 @@ abb::egm::EgmSensor* Pose_to_EgmSensor(geometry_msgs::Pose pose, unsigned int se
   abb::egm::EgmSensor* msg = new abb::egm::EgmSensor();
   msg->set_allocated_header(header);
   msg->set_allocated_planned(planned);
+  return msg;
+}
+
+abb::egm::EgmSensor* Velocity_to_EgmSensor(geometry_msgs::Pose vel, geometry_msgs::Pose pose, unsigned int seqno, uint32_t tick)
+{
+  abb::egm::EgmCartesianSpeed *cs = new abb::egm::EgmCartesianSpeed();
+  cs->add_value(vel.position.x*1000.0);
+  cs->add_value(vel.position.y*1000.0);
+  cs->add_value(vel.position.z*1000.0);
+  cs->add_value(vel.orientation.x);
+  cs->add_value(vel.orientation.y);
+  cs->add_value(vel.orientation.z);
+
+  abb::egm::EgmSpeedRef *speedref = new abb::egm::EgmSpeedRef();
+  speedref->set_allocated_cartesians(cs);
+
+  // A valid position must be sent too, although it is ignored
+  abb::egm::EgmSensor* msg = Position_to_EgmSensor(pose, seqno, tick);
+  msg->set_allocated_speedref(speedref);
   return msg;
 }
 

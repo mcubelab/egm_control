@@ -23,13 +23,15 @@ int main(int argc, char **argv)
   std::string command_mode;
   abb::egm::EgmFeedBack feedback;
 
-  ROS_INFO("[EGMControl] Ready");
+  // Important: EGM mode cannot be changed after startup
+  ros::param::param<std::string>("egm_mode", command_mode, "position");
+
+  ROS_INFO("[EGMControl] Ready. EGM mode: %s", command_mode.c_str());
 
   while (ros::ok())
   {
     ros::spinOnce();
     command_pose = ros_helper.get_command_pose();
-    ros::param::param<std::string>("egm_mode", command_mode, "position");
     sent_pose = robot_controller.send_command(command_pose, command_mode, hz);
     ros_helper.publish_sent_pose(sent_pose);
 

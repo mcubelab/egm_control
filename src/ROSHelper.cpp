@@ -31,7 +31,7 @@ geometry_msgs::PoseStamped ROSHelper::get_command_pose()
     command_poses.erase(command_poses.begin());
     return last_command_ps;
   } else {
-    ROS_INFO("[EGMControl] Lack of command poses in buffer");
+    // ROS_INFO("[EGMControl] Lack of command poses in buffer");
     return geometry_msgs::PoseStamped();
   }
 }
