@@ -6,7 +6,7 @@ from sensor_msgs.msg import JointState
 from geometry_msgs.msg import PoseStamped
 from std_msgs.msg import Header
 
-initial_pos = [0.3, 0.0, 0.1782]
+initial_pos = [0.3, 0.0, 0.2782]
 tol = 0.005 # m tolerance for continuity between functions
 
 def f0(t):

@@ -46,22 +46,22 @@ geometry_msgs::PoseStamped RobotController::send_command(geometry_msgs::PoseStam
   new_sent_time = ros::Time::now();
   if (command_mode == "velocity") {
     if(command_pose.header.stamp == ros::Time(0)) {
+      // Default behavior: send zero speed
       target = geometry_msgs::Pose();
     } else {
       target = command_pose.pose;
     }
-    last_egm_sensor = Velocity_to_EgmSensor(target, seqno++, get_tick()-start_tick);
+    last_egm_sensor = Velocity_to_EgmSensor(target, last_measured_ps.pose, seqno++, get_tick()-start_tick);
   } else {
     if (command_pose.header.stamp == ros::Time(0)) {
+      // Default behavior: send last sent pose
       target = last_sent_ps.pose;
     } else {
       target = command_pose.pose;
     }
-
     target.position.x = max(min(target.position.x, x_limits.second), x_limits.first);
     target.position.y = max(min(target.position.y, y_limits.second), y_limits.first);
     target.position.z = max(min(target.position.z, z_limits.second), z_limits.first);
-
     last_egm_sensor = Position_to_EgmSensor(target, seqno++, get_tick()-start_tick);
   }
   Pose_to_PoseStamped(target, new_sent_time, last_sent_ps);

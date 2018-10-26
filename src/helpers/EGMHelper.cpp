@@ -83,13 +83,8 @@ abb::egm::EgmSensor* Position_to_EgmSensor(geometry_msgs::Pose pose, unsigned in
   return msg;
 }
 
-abb::egm::EgmSensor* Velocity_to_EgmSensor(geometry_msgs::Pose vel, unsigned int seqno, uint32_t tick)
+abb::egm::EgmSensor* Velocity_to_EgmSensor(geometry_msgs::Pose vel, geometry_msgs::Pose pose, unsigned int seqno, uint32_t tick)
 {
-  abb::egm::EgmHeader* header = new abb::egm::EgmHeader();
-  header->set_mtype(abb::egm::EgmHeader_MessageType_MSGTYPE_CORRECTION);
-  header->set_seqno(seqno);
-  header->set_tm(tick);
-
   abb::egm::EgmCartesianSpeed *cs = new abb::egm::EgmCartesianSpeed();
   cs->add_value(vel.position.x*1000.0);
   cs->add_value(vel.position.y*1000.0);
@@ -101,8 +96,8 @@ abb::egm::EgmSensor* Velocity_to_EgmSensor(geometry_msgs::Pose vel, unsigned int
   abb::egm::EgmSpeedRef *speedref = new abb::egm::EgmSpeedRef();
   speedref->set_allocated_cartesians(cs);
 
-  abb::egm::EgmSensor* msg = new abb::egm::EgmSensor();
-  msg->set_allocated_header(header);
+  // A valid position must be sent too, although it is ignored
+  abb::egm::EgmSensor* msg = Position_to_EgmSensor(pose, seqno, tick);
   msg->set_allocated_speedref(speedref);
   return msg;
 }

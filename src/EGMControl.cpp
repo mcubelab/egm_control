@@ -23,9 +23,10 @@ int main(int argc, char **argv)
   std::string command_mode;
   abb::egm::EgmFeedBack feedback;
 
-  ROS_INFO("[EGMControl] Ready");
-  // ros::param::param<std::string>("egm_mode", command_mode, "position");
-  command_mode = "velocity";
+  // Important: EGM mode cannot be changed after startup
+  ros::param::param<std::string>("egm_mode", command_mode, "position");
+
+  ROS_INFO("[EGMControl] Ready. EGM mode: %s", command_mode.c_str());
 
   while (ros::ok())
   {

@@ -30,6 +30,10 @@ cmd "3-example-vel-3d" {
     exec = "rosrun egm_control example-vel-3d.py";
     host = "localhost";
 }
+cmd "3-example-vel-6d" {
+    exec = "rosrun egm_control example-vel-6d.py";
+    host = "localhost";
+}
 cmd "3-keep-moving" {
     exec = "rosrun egm_control keep-moving.py";
     host = "localhost";
@@ -47,6 +51,14 @@ script "1-single-test" {
     start cmd "2-rosbag-record";
     wait ms 500;
     start cmd "3-example-vel-3d" wait "stopped";
+    wait ms 5000;
+    stop cmd "2-rosbag-record";
+}
+
+script "1-single-test-6d" {
+    start cmd "2-rosbag-record";
+    wait ms 500;
+    start cmd "3-example-vel-6d" wait "stopped";
     wait ms 5000;
     stop cmd "2-rosbag-record";
 }
