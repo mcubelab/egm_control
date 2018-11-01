@@ -7,6 +7,7 @@ RobotController::RobotController(ros::NodeHandle n, int udpPort, limits x_limits
 {
   sock = new UDPSocket(udpPort);
   flush_robot_data();
+  sock->setTimeout(500000);
   last_sent_ps = last_measured_ps;
 }
 

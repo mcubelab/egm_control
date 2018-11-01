@@ -35,16 +35,21 @@ int main(int argc, char **argv)
     sent_pose = robot_controller.send_command(command_pose, command_mode, hz);
     ros_helper.publish_sent_pose(sent_pose);
 
-    robot_controller.flush_robot_data();
-    robot_controller.get_measured_pose(measured_pose);
-    robot_controller.get_measured_js(joint_state);
-    ros_helper.publish_measured_pose(measured_pose);
-    ros_helper.publish_joint_state(joint_state);
+    try {
+      robot_controller.flush_robot_data();
+      robot_controller.get_measured_pose(measured_pose);
+      robot_controller.get_measured_js(joint_state);
+      ros_helper.publish_measured_pose(measured_pose);
+      ros_helper.publish_joint_state(joint_state);
+    }
+    catch (SocketException& e) {
+      ROS_INFO("[EGMControl] EGM reset by RAPID server");
+      break;
+    }
 
     rate.sleep();
   }
-  delete &ros_helper;
-  delete &robot_controller;
+  
   ROS_INFO("[EGMControl] End of program");
   return 0;
 }
