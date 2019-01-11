@@ -355,6 +355,16 @@ int UDPSocket::recvFrom(void *buffer, int bufferLen, string &sourceAddress,
   return rtn;
 }
 
+int UDPSocket::setTimeout(int usec) {
+  struct timeval t;
+  t.tv_sec = 0;
+  t.tv_usec = usec; // 0.5 seconds
+  // References:
+  // https://github.com/mzahana/MavLinkBridge/commit/5c9b5fbf9413022c5252d95d79e313fc26c0af62#diff-78c9ecda78a15146c81e84dc49c0f585
+  // http://stackoverflow.com/questions/22120380/udp-receive-timeout-option-linux-c
+  return setsockopt(sockDesc, SOL_SOCKET, SO_RCVTIMEO, &t, sizeof(t));
+}
+
 void UDPSocket::setMulticastTTL(unsigned char multicastTTL) throw(SocketException) {
   if (setsockopt(sockDesc, IPPROTO_IP, IP_MULTICAST_TTL,
                  (raw_type *) &multicastTTL, sizeof(multicastTTL)) < 0) {

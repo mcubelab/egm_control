@@ -6,6 +6,9 @@
 #include "geometry_msgs/PoseStamped.h"
 #include "egm.pb.h"
 
+#define PI 3.14159265
+#define RAD2DEG 180/PI
+
 #pragma comment(lib, "libprotobuf.lib")
 
 uint32_t get_tick()
@@ -44,38 +47,34 @@ void EgmFeedBack_to_PoseStamped(abb::egm::EgmFeedBack *fb, geometry_msgs::PoseSt
 void EgmFeedBack_to_JointState(abb::egm::EgmFeedBack *fb, sensor_msgs::JointState& js)
 {
   js.header.stamp = ros::Time::now();
-  js.name = {"joint1", "joint2", "joint3", "joint4", "joint5", "joint6"};
-  js.position.resize(6);
+  js.name = {"joint1", "joint2", "joint3", "joint4", "joint5", "joint6", "joint7"};
+  js.position.resize(7);
   for (int i = 0; i < 6; i++)
-    js.position[i] = fb->joints().joints(i);
-  js.velocity = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-  js.effort = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    js.position[i] = fb->joints().joints(i)*RAD2DEG;
+  js.position[6] =  fb->externaljoints().joints(0)*RAD2DEG;
 }
 
-abb::egm::EgmSensor* Position_to_EgmSensor(geometry_msgs::Pose pose, unsigned int seqno, uint32_t tick)
+abb::egm::EgmSensor* Position_to_EgmSensor(std::vector<double> target, unsigned int seqno, uint32_t tick)
 {
   abb::egm::EgmHeader* header = new abb::egm::EgmHeader();
   header->set_mtype(abb::egm::EgmHeader_MessageType_MSGTYPE_CORRECTION);
   header->set_seqno(seqno);
   header->set_tm(tick);
 
-  abb::egm::EgmCartesian *pc = new abb::egm::EgmCartesian();
-  pc->set_x(pose.position.x*1000.0);
-  pc->set_y(pose.position.y*1000.0);
-  pc->set_z(pose.position.z*1000.0);
-
-  abb::egm::EgmQuaternion *pq = new abb::egm::EgmQuaternion();
-  pq->set_u0(pose.orientation.w);
-  pq->set_u1(pose.orientation.x);
-  pq->set_u2(pose.orientation.y);
-  pq->set_u3(pose.orientation.z);
-
-  abb::egm::EgmPose *pp = new abb::egm::EgmPose();
-  pp->set_allocated_pos(pc);
-  pp->set_allocated_orient(pq);
+  abb::egm::EgmJoints *pj = new abb::egm::EgmJoints();
+  pj->add_joints(target[0]);
+  pj->add_joints(target[1]);
+  pj->add_joints(target[2]);
+  pj->add_joints(target[3]);
+  pj->add_joints(target[4]);
+  pj->add_joints(target[5]);
+  
+  abb::egm::EgmJoints *pej = new abb::egm::EgmJoints();
+  pej->add_joints(target[6]);
 
   abb::egm::EgmPlanned *planned = new abb::egm::EgmPlanned();
-  planned->set_allocated_cartesian(pp);
+  planned->set_allocated_joints(pj);
+  planned->set_allocated_externaljoints(pej);
 
   abb::egm::EgmSensor* msg = new abb::egm::EgmSensor();
   msg->set_allocated_header(header);
@@ -83,32 +82,32 @@ abb::egm::EgmSensor* Position_to_EgmSensor(geometry_msgs::Pose pose, unsigned in
   return msg;
 }
 
-abb::egm::EgmSensor* Velocity_to_EgmSensor(geometry_msgs::Pose vel, geometry_msgs::Pose pose, unsigned int seqno, uint32_t tick)
+abb::egm::EgmSensor* Velocity_to_EgmSensor(std::vector<double> target, std::vector<double> pos, unsigned int seqno, uint32_t tick)
 {
-  abb::egm::EgmCartesianSpeed *cs = new abb::egm::EgmCartesianSpeed();
-  cs->add_value(vel.position.x*1000.0);
-  cs->add_value(vel.position.y*1000.0);
-  cs->add_value(vel.position.z*1000.0);
-  cs->add_value(vel.orientation.x);
-  cs->add_value(vel.orientation.y);
-  cs->add_value(vel.orientation.z);
+  abb::egm::EgmJoints *pj = new abb::egm::EgmJoints();
+  pj->add_joints(target[0]);
+  pj->add_joints(target[1]);
+  pj->add_joints(target[2]);
+  pj->add_joints(target[3]);
+  pj->add_joints(target[4]);
+  pj->add_joints(target[5]);
+  
+  abb::egm::EgmJoints *pej = new abb::egm::EgmJoints();
+  pej->add_joints(target[6]);
 
   abb::egm::EgmSpeedRef *speedref = new abb::egm::EgmSpeedRef();
-  speedref->set_allocated_cartesians(cs);
+  speedref->set_allocated_joints(pj);
+  speedref->set_allocated_externaljoints(pej);
 
   // A valid position must be sent too, although it is ignored
-  abb::egm::EgmSensor* msg = Position_to_EgmSensor(pose, seqno, tick);
+  abb::egm::EgmSensor* msg = Position_to_EgmSensor(pos, seqno, tick);
   msg->set_allocated_speedref(speedref);
   return msg;
 }
 
-void translate_pose_by_velocity(geometry_msgs::Pose pose, geometry_msgs::Pose vel, double dt, geometry_msgs::Pose& target)
+void Target_to_JointState(const std::vector<double>& target, ros::Time time, sensor_msgs::JointState& js)
 {
-  target.position.x += vel.position.x * dt;
-  target.position.y += vel.position.y * dt;
-  target.position.z += vel.position.z * dt;
-  target.orientation.x += 0.5*dt*(pose.orientation.w*vel.orientation.x - pose.orientation.y*vel.orientation.z + pose.orientation.z*vel.orientation.y);
-  target.orientation.y += 0.5*dt*(pose.orientation.w*vel.orientation.y + pose.orientation.x*vel.orientation.z - pose.orientation.z*vel.orientation.x);
-  target.orientation.z += 0.5*dt*(pose.orientation.w*vel.orientation.z + pose.orientation.x*vel.orientation.y + pose.orientation.y*vel.orientation.x);
-  target.orientation.w -= 0.5*dt*(pose.orientation.x*vel.orientation.x + pose.orientation.y*vel.orientation.y + vel.orientation.z*vel.orientation.z);
+  js.header.stamp = time;
+  js.name = {"joint1", "joint2", "joint3", "joint4", "joint5", "joint6", "joint7"};
+  js.position = target;
 }

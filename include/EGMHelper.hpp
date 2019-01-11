@@ -21,10 +21,12 @@ void EgmFeedBack_to_PoseStamped(abb::egm::EgmFeedBack *fb, geometry_msgs::PoseSt
 
 void EgmFeedBack_to_JointState(abb::egm::EgmFeedBack *fb, sensor_msgs::JointState& js);
 
-abb::egm::EgmSensor* Position_to_EgmSensor(geometry_msgs::Pose pose, uint32_t seqno, uint32_t tick);
+abb::egm::EgmSensor* Position_to_EgmSensor(std::vector<double> target, unsigned int seqno, uint32_t tick);
 
-abb::egm::EgmSensor* Velocity_to_EgmSensor(geometry_msgs::Pose vel, geometry_msgs::Pose pose, uint32_t seqno, uint32_t tick);
+abb::egm::EgmSensor* Velocity_to_EgmSensor(std::vector<double> target, std::vector<double> pos, unsigned int seqno, uint32_t tick);
 
 void translate_pose_by_velocity(geometry_msgs::Pose pose, geometry_msgs::Pose vel, double dt, geometry_msgs::Pose& target);
+
+void Target_to_JointState(const std::vector<double>& target, ros::Time time, sensor_msgs::JointState& js);
 
 #endif

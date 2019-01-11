@@ -2,10 +2,6 @@
 #include "ROSHelper.hpp"
 #include "RobotController.hpp"
 
-limits x_limits = limits(0.1, 0.6);
-limits y_limits = limits(-0.4, 0.4);
-limits z_limits = limits(0.0, 0.5);
-
 double hz = 250.0;
 
 int main(int argc, char **argv)
@@ -13,13 +9,15 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "EGMControl");
   ros::NodeHandle n;
 
+  ROS_INFO("[EGMControl] Initializing...");
+
   ROSHelper ros_helper = ROSHelper(n);
-  RobotController robot_controller = RobotController(n, 6510, x_limits, y_limits, z_limits);
+  RobotController robot_controller = RobotController(n, 6510);
 
   ros::Rate rate(hz);
 
-  geometry_msgs::PoseStamped command_pose, sent_pose, measured_pose;
-  sensor_msgs::JointState joint_state;
+  geometry_msgs::PoseStamped measured_pose;
+  sensor_msgs::JointState command_joints, sent_joints, measured_joints;
   std::string command_mode;
   abb::egm::EgmFeedBack feedback;
 
@@ -31,20 +29,25 @@ int main(int argc, char **argv)
   while (ros::ok())
   {
     ros::spinOnce();
-    command_pose = ros_helper.get_command_pose();
-    sent_pose = robot_controller.send_command(command_pose, command_mode, hz);
-    ros_helper.publish_sent_pose(sent_pose);
+    command_joints = ros_helper.get_command_joints();
+    sent_joints = robot_controller.send_command(command_joints, command_mode, hz);
+    ros_helper.publish_sent_joints(sent_joints);
 
-    robot_controller.flush_robot_data();
-    robot_controller.get_measured_pose(measured_pose);
-    robot_controller.get_measured_js(joint_state);
-    ros_helper.publish_measured_pose(measured_pose);
-    ros_helper.publish_joint_state(joint_state);
+    try {
+      robot_controller.flush_robot_data();
+      robot_controller.get_measured_pose(measured_pose);
+      robot_controller.get_measured_joints(measured_joints);
+      ros_helper.publish_measured_pose(measured_pose);
+      ros_helper.publish_measured_joints(measured_joints);
+    }
+    catch (SocketException& e) {
+      ROS_INFO("[EGMControl] EGM reset by RAPID server");
+      break;
+    }
 
     rate.sleep();
   }
-  delete &ros_helper;
-  delete &robot_controller;
+
   ROS_INFO("[EGMControl] End of program");
   return 0;
 }
