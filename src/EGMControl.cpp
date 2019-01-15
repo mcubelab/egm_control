@@ -11,8 +11,9 @@ int main(int argc, char **argv)
 
   ROS_INFO("[EGMControl] Initializing...");
 
-  ROSHelper ros_helper = ROSHelper(n);
-  RobotController robot_controller = RobotController(n, 6510);
+  int yumi_port = atoi(argv[1]);
+  ROSHelper ros_helper = ROSHelper(n, yumi_port);
+  RobotController robot_controller = RobotController(n, yumi_port);
 
   ros::Rate rate(hz);
 
