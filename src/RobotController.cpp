@@ -46,19 +46,21 @@ sensor_msgs::JointState RobotController::send_command(sensor_msgs::JointState co
 {
   new_sent_time = ros::Time::now();
   if (command_mode == "velocity") {
-    if(command_joints.header.seq == 0) {
+    if(command_joints.header.seq == lastSeq) {
       // Default behavior: send zero speed
       target = std::vector<double>(7, 0.0);
     } else {
       target = command_joints.velocity;
+      lastSeq = command_joints.header.seq;
     }
     last_egm_sensor = Velocity_to_EgmSensor(target, last_measured_js.position, seqno++, get_tick()-start_tick);
   } else {
-    if (command_joints.header.seq == 0) {
+    if (command_joints.header.seq == lastSeq) {
       // Default behavior: send last sent pose
       target = last_sent_js.position;
     } else {
       target = command_joints.position;
+      lastSeq = command_joints.header.seq;
     }
     last_egm_sensor = Position_to_EgmSensor(target, seqno++, get_tick()-start_tick);
   }

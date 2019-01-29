@@ -34,6 +34,7 @@ private:
   char inBuffer[MAX_BUFFER];
   std::string outBuffer;
   int messageSize;
+  int lastSeq;
   std::string sourceAddr;
   unsigned short sourcePort;
 
