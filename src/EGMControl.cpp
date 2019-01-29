@@ -23,7 +23,7 @@ int main(int argc, char **argv)
   abb::egm::EgmFeedBack feedback;
 
   // Important: EGM mode cannot be changed after startup
-  ros::param::param<std::string>("egm_mode", command_mode, "position");
+  ros::param::param<std::string>("egm_command_mode", command_mode, "position");
 
   ROS_INFO("[EGMControl] Ready. EGM mode: %s", command_mode.c_str());
 
