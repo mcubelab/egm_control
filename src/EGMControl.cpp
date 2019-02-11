@@ -11,27 +11,33 @@ int main(int argc, char **argv)
 
   ROS_INFO("[EGMControl] Initializing...");
 
+  // Important: EGM mode cannot be changed after startup
+  std::string command_mode, command_input;
+  ros::param::param<std::string>("egm_command_mode", command_mode, "position");
+  ros::param::param<std::string>("egm_command_input", command_input, "joints");
+
   int yumi_port = atoi(argv[1]);
   ROSHelper ros_helper = ROSHelper(n, yumi_port);
-  RobotController robot_controller = RobotController(n, yumi_port);
+  RobotController robot_controller = RobotController(n, yumi_port, command_input);
 
   ros::Rate rate(hz);
 
-  geometry_msgs::PoseStamped measured_pose;
+  geometry_msgs::PoseStamped measured_pose, command_pose;
   sensor_msgs::JointState command_joints, sent_joints, measured_joints;
-  std::string command_mode;
   abb::egm::EgmFeedBack feedback;
-
-  // Important: EGM mode cannot be changed after startup
-  ros::param::param<std::string>("egm_command_mode", command_mode, "position");
 
   ROS_INFO("[EGMControl] Ready. EGM mode: %s", command_mode.c_str());
 
   while (ros::ok())
   {
     ros::spinOnce();
-    command_joints = ros_helper.get_command_joints();
-    sent_joints = robot_controller.send_command(command_joints, command_mode, hz);
+    if(command_input == "pose") {
+      command_pose = ros_helper.get_command_pose();
+      sent_joints = robot_controller.send_command(command_pose, command_mode, hz);
+    } else {
+      command_joints = ros_helper.get_command_joints();
+      sent_joints = robot_controller.send_command(command_joints, command_mode, hz);
+    }
     ros_helper.publish_sent_joints(sent_joints);
 
     try {

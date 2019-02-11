@@ -7,8 +7,12 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  kdl_parser
+  urdf
+  trac_ik_lib
 )
 find_package(Protobuf REQUIRED)
+find_package(Eigen3 REQUIRED)
 
 catkin_package(
  INCLUDE_DIRS include
@@ -20,6 +24,7 @@ catkin_package(
 include_directories(
   include
   ${PROTOBUF_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIR}
   ${catkin_INCLUDE_DIRS}
 )
 

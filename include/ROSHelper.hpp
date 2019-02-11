@@ -19,6 +19,10 @@ public:
 
   sensor_msgs::JointState get_command_joints();
 
+  void load_command_pose(const geometry_msgs::PoseStamped& data);
+
+  geometry_msgs::PoseStamped get_command_pose();
+
   void publish_measured_joints(const sensor_msgs::JointState joints);
 
   void publish_measured_pose(const geometry_msgs::PoseStamped pose);
@@ -26,11 +30,10 @@ public:
   void publish_sent_joints(const sensor_msgs::JointState joints);
 
 private:
-  ros::Subscriber command_joints_sub;
-  ros::Publisher measured_joints_pub;
-  ros::Publisher measured_pose_pub;
-  ros::Publisher sent_joints_pub;
+  ros::Subscriber command_joints_sub, command_pose_sub;
+  ros::Publisher measured_joints_pub, measured_pose_pub, sent_joints_pub;
   sensor_msgs::JointState command_joints;
+  geometry_msgs::PoseStamped command_pose;
 };
 
 #endif
