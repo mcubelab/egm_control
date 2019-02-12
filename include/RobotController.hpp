@@ -22,12 +22,15 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 
 #define PI 3.14159265
 
 class RobotController {
 public:
-  RobotController(ros::NodeHandle n, int udpPort, std::string command_input);
+  RobotController(ros::NodeHandle n, int udpPort, std::string command_input, std::string ik_mode);
   ~RobotController();
 
   void flush_robot_data();
@@ -61,6 +64,11 @@ private:
 
   KDL::JntArray joint_seed = KDL::JntArray(7);
   TRAC_IK::TRAC_IK* ik_solver;
+  int ik_socket;
+  std::string ik_mode;
+  char ik_message[MAX_BUFFER], ik_reply[MAX_BUFFER];
+  int ik_replySize, ik_response;
+  double ik_j1, ik_j2, ik_j3, ik_j4, ik_j5, ik_j6, ik_j7;
 };
 
 #endif

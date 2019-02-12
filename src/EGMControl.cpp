@@ -12,13 +12,14 @@ int main(int argc, char **argv)
   ROS_INFO("[EGMControl] Initializing...");
 
   // Important: EGM mode cannot be changed after startup
-  std::string command_mode, command_input;
+  std::string command_mode, command_input, ik_mode;
   ros::param::param<std::string>("egm_command_mode", command_mode, "position");
   ros::param::param<std::string>("egm_command_input", command_input, "joints");
+  ros::param::param<std::string>("egm_ik_mode", ik_mode, "internal");
 
   int yumi_port = atoi(argv[1]);
   ROSHelper ros_helper = ROSHelper(n, yumi_port);
-  RobotController robot_controller = RobotController(n, yumi_port, command_input);
+  RobotController robot_controller = RobotController(n, yumi_port, command_input, ik_mode);
 
   ros::Rate rate(hz);
 
