@@ -28,9 +28,9 @@ void Pose_to_PoseStamped(const geometry_msgs::Pose& pose, ros::Time time, geomet
 
 void EgmFeedBack_to_Pose(abb::egm::EgmFeedBack *fb, geometry_msgs::Pose& pose)
 {
-  pose.position.x = fb->cartesian().pos().x()/1000.0;
-  pose.position.y = fb->cartesian().pos().y()/1000.0;
-  pose.position.z = fb->cartesian().pos().z()/1000.0;
+  pose.position.x = fb->cartesian().pos().x();
+  pose.position.y = fb->cartesian().pos().y();
+  pose.position.z = fb->cartesian().pos().z();
   pose.orientation.x = fb->cartesian().orient().u1();
   pose.orientation.y = fb->cartesian().orient().u2();
   pose.orientation.z = fb->cartesian().orient().u3();
@@ -68,7 +68,7 @@ abb::egm::EgmSensor* Position_to_EgmSensor(std::vector<double> target, unsigned 
   pj->add_joints(target[3]);
   pj->add_joints(target[4]);
   pj->add_joints(target[5]);
-  
+
   abb::egm::EgmJoints *pej = new abb::egm::EgmJoints();
   pej->add_joints(target[6]);
 
@@ -91,7 +91,7 @@ abb::egm::EgmSensor* Velocity_to_EgmSensor(std::vector<double> target, std::vect
   pj->add_joints(target[3]);
   pj->add_joints(target[4]);
   pj->add_joints(target[5]);
-  
+
   abb::egm::EgmJoints *pej = new abb::egm::EgmJoints();
   pej->add_joints(target[6]);
 
